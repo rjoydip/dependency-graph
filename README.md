@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/public/logo.svg" alt="Relic" width="128" height="128" />
+</p>
+
 # Relic
 
 Static dependency-graph engine for TypeScript repositories, exposed three ways: an MCP server (for coding agents), a Hono HTTP API, and a React Flow dashboard.
@@ -107,6 +111,25 @@ bun run dev:dashboard                    # http://127.0.0.1:5173, proxies /api t
 ```
 
 The API rejects repository paths outside `allowedRoots` (`PATH_ESCAPE`) and caps pagination; SQL is fully parameterized (see `tests/security/`).
+
+## Deployment
+
+The dashboard and docs ship as one assets-only Cloudflare Worker, managed by
+[Alchemy](https://alchemy.run): dashboard at `/`, docs at `/docs/`.
+
+```sh
+bun run site:build   # dashboard + docs -> apps/dashboard/dist
+bun run deploy       # alchemy deploy
+```
+
+The first deploy needs an Alchemy state store on the account — run
+`bun alchemy state bootstrap` once (CI sets `CI=true`, which refuses to create
+it implicitly). `.github/workflows/deploy.yml` builds and deploys on pushes to
+`main` using `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID`.
+
+Only the static surface is deployed. The API stays local: it depends on
+`node:sqlite`, child processes and filesystem indexing, none of which run in a
+Worker. Point a deployment at a separately hosted API if you need one.
 
 ## Indexing semantics
 

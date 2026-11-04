@@ -59,7 +59,7 @@ test("type filter is a dropdown that narrows the graph", async ({ page }) => {
   expect(after).toBeLessThan(before);
 });
 
-test("inspector source link opens the highlighted code view", async ({ page }) => {
+test("inspector source button opens the highlighted code view", async ({ page }) => {
   await gotoDashboard(page);
   // symbols always carry a line range, so the highlight below is deterministic
   await page.getByRole("button", { name: "All types", exact: true }).click();
@@ -68,11 +68,14 @@ test("inspector source link opens the highlighted code view", async ({ page }) =
   await page.locator(GRAPH_NODES).first().click();
   const inspector = page.locator(".inspector");
   await expect(inspector).toBeVisible();
-  const src = inspector.locator('button[title="Show file content"]');
-  await expect(src).toBeVisible();
-  const label = (await src.textContent()) ?? "";
+  // selecting a node must never open the viewer on its own
+  await expect(page.locator('[role="dialog"]')).toBeHidden();
+
+  const label = (await inspector.locator(".source-path").textContent()) ?? "";
   expect(label).toMatch(/:\d+/); // "src/…/file.ts:8–14" — has a line range
 
+  const src = inspector.locator(".code-open");
+  await expect(src).toBeVisible();
   await src.click();
   const dialog = page.locator('[role="dialog"]');
   await expect(dialog).toBeVisible();
@@ -89,6 +92,79 @@ test("inspector source link opens the highlighted code view", async ({ page }) =
 
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
+
+  // explorer hides behind an icon-only peek and reopens the same way
+  await page.getByLabel("Hide explorer").click();
+  await expect(page.locator("aside.explorer")).toHaveCount(0);
+  await page.getByLabel("Show explorer").click();
+  await expect(page.locator("aside.explorer")).toBeVisible();
+
+  // details collapses to an icon-only peek
+  await page.getByLabel("Hide details").click();
+  await expect(page.locator(".inspector")).toHaveCount(0);
+  await page.getByLabel("Show details").click();
+  await expect(page.locator(".inspector")).toBeVisible();
+
+  // relationship navigation keeps a back/forward trail
+  await page.locator(".edge-target").first().click();
+  await expect(page.getByLabel("Previous node")).toBeEnabled();
+  await page.getByLabel("Previous node").click();
+  await expect(page.getByLabel("Next node")).toBeEnabled();
+});
+
+test("brand click resets the dashboard", async ({ page }) => {
+  await gotoDashboard(page);
+  await page.locator(GRAPH_NODES).first().click();
+  await expect(page.locator(".inspector")).toBeVisible();
+  await page.getByLabel("Search nodes").fill("users");
+  await page.getByRole("button", { name: "All types", exact: true }).click();
+  await page.getByRole("menu").getByRole("menuitemradio", { name: "symbol", exact: true }).click();
+
+  await page.getByRole("button", { name: "Reset dashboard" }).click();
+  // reset clears the dashboard back to the index screen, keeping a history
+  await expect(page.getByRole("heading", { name: "Index a repository" })).toBeVisible();
+  const history = page.locator(".repo-history");
+  await expect(history).toBeVisible();
+  await expect(history.locator("li")).not.toHaveCount(0);
+
+  // a history entry restores that repository
+  await history.locator("li .link").first().click();
+  await expect(page.locator(GRAPH_NODES).first()).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByLabel("Search nodes")).toHaveValue("");
+});
+
+test("snapshot round-trips through the API and the index screen", async ({ page }) => {
+  await gotoDashboard(page);
+  await expect(page.getByRole("button", { name: "Download snapshot" })).toBeVisible();
+
+  const repos = await (await page.request.get("/api/repositories")).json();
+  const id = repos.repositories[0].id;
+  const snapshot = await (await page.request.get(`/api/repositories/${id}/snapshot`)).json();
+  expect(snapshot.format).toBe("relic-snapshot");
+  expect(snapshot.nodes.length).toBeGreaterThan(0);
+  expect(snapshot.edges.length).toBeGreaterThan(0);
+
+  await page.getByRole("button", { name: "Reset dashboard" }).click();
+  await expect(page.getByRole("heading", { name: "Index a repository" })).toBeVisible();
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "snapshot.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(snapshot)),
+  });
+  await expect(page.locator(GRAPH_NODES).first()).toBeVisible({ timeout: 30_000 });
+});
+
+test("indexed repository can be deleted from the cache", async ({ page }) => {
+  await gotoDashboard(page);
+  await page.getByRole("button", { name: "Reset dashboard" }).click();
+  await expect(page.locator(".repo-history")).toBeVisible();
+
+  await page
+    .getByLabel(/Delete .* index/)
+    .first()
+    .click();
+  await expect(page.locator(".repo-history")).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Index a repository" })).toBeVisible();
 });
 
 test("theme toggle flips the data-theme attribute", async ({ page }) => {
