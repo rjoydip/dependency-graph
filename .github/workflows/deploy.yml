@@ -2,7 +2,7 @@ name: deploy
 
 on:
   push:
-    branches: [main, feat/graph-analytics-automation-ui]
+    branches: [main]
     paths:
       - "apps/dashboard/**"
       - "docs/**"
