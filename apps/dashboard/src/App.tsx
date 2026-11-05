@@ -508,7 +508,7 @@ export function App() {
         </header>
         <div className="center-stage">
           <div className="hero">
-            <h2>{staticMode ? "Explore a snapshot" : "Index a repository"}</h2>
+            <h2>{staticMode ? "Explore a snapshot" : "Build a dependency graph"}</h2>
             {staticMode ? (
               <p className="static-note">
                 This hosted dashboard is read-only. Load a <code>.json</code> snapshot exported from
@@ -517,7 +517,11 @@ export function App() {
               </p>
             ) : (
               <>
-                <p className="muted">Enter a local path or a GitHub URL to build the graph.</p>
+                <p className="muted">
+                  Point Relic at a local folder or a public GitHub repository. It maps files,
+                  routes, classes, calls and tests into one graph — local paths never leave your
+                  machine.
+                </p>
                 <IndexForm busy={indexing} onIndex={runIndex} />
               </>
             )}

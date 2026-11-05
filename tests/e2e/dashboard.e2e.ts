@@ -15,7 +15,7 @@ async function gotoDashboard(page: Page) {
 
 test("indexes a repository from the empty state", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Index a repository" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Build a dependency graph" })).toBeVisible();
   await page.getByLabel("Repository source").fill(FIXTURE);
   await page.getByLabel("Index repository").click();
   await expect(page.locator(GRAPH_NODES).first()).toBeVisible({ timeout: 30_000 });
@@ -122,7 +122,7 @@ test("brand click resets the dashboard", async ({ page }) => {
 
   await page.getByRole("button", { name: "Reset dashboard" }).click();
   // reset clears the dashboard back to the index screen, keeping a history
-  await expect(page.getByRole("heading", { name: "Index a repository" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Build a dependency graph" })).toBeVisible();
   const history = page.locator(".repo-history");
   await expect(history).toBeVisible();
   await expect(history.locator("li")).not.toHaveCount(0);
@@ -145,7 +145,7 @@ test("snapshot round-trips through the API and the index screen", async ({ page 
   expect(snapshot.edges.length).toBeGreaterThan(0);
 
   await page.getByRole("button", { name: "Reset dashboard" }).click();
-  await expect(page.getByRole("heading", { name: "Index a repository" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Build a dependency graph" })).toBeVisible();
   await page.locator('input[type="file"]').setInputFiles({
     name: "snapshot.json",
     mimeType: "application/json",
@@ -164,7 +164,7 @@ test("indexed repository can be deleted from the cache", async ({ page }) => {
     .first()
     .click();
   await expect(page.locator(".repo-history")).toHaveCount(0);
-  await expect(page.getByRole("heading", { name: "Index a repository" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Build a dependency graph" })).toBeVisible();
 });
 
 test("static deployment renders snapshots client-side without the API", async ({ page }) => {
