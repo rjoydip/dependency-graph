@@ -11,7 +11,7 @@ export default defineConfig({
   outDir: "../apps/dashboard/dist/docs",
   cleanUrls: true,
   appearance: true,
-  vite: { server: { port: 5174 } },
+  vite: { server: { host: "127.0.0.1", port: 5174, strictPort: true } },
   head: [["link", { rel: "icon", type: "image/svg+xml", href: `${base}logo.svg` }]],
   themeConfig: {
     logo: { light: "/logo.svg", dark: "/logo-dark.svg" },

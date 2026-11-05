@@ -14,6 +14,7 @@ import {
   CodeBlockLine,
 } from "@/components/ui/code-block";
 import { FileCodeIcon, XIcon } from "lucide-react";
+import { Hint } from "@/components/ui/tooltip";
 import { useHighlightedCode } from "@/hooks/use-highlighted-code";
 import { api } from "./api";
 
@@ -114,29 +115,29 @@ export function CodeModal({ repoId, code, onClose }: CodeModalProps) {
             <FileCodeIcon />
           </span>
           <div className="code-modal-file">
-            <DialogTitle className="code-modal-name" title={code.path}>
-              {name}
-            </DialogTitle>
-            <span className="code-modal-path mono" title={code.path}>
-              {dir || "./"}
-            </span>
+            <Hint side="bottom" label={code.path}>
+              <DialogTitle className="code-modal-name">{name}</DialogTitle>
+            </Hint>
+            <Hint side="bottom" label={code.path}>
+              <span className="code-modal-path mono">{dir || "./"}</span>
+            </Hint>
           </div>
           <div className="code-modal-meta">
             <span className="code-chip">{langOf(code.path) || "text"}</span>
             {range && (
-              <span className="code-chip code-chip-accent" title="Highlighted in the file">
-                {range}
-              </span>
+              <Hint label="Highlighted in the file">
+                <span className="code-chip code-chip-accent">{range}</span>
+              </Hint>
             )}
             {lineCount !== null && <span className="code-chip">{lineCount} lines</span>}
           </div>
           <div className="code-modal-actions">
             {content !== null && <CodeBlockCopyButton value={content} />}
-            <DialogClose
-              render={<Button variant="ghost" size="icon-sm" title="Close" aria-label="Close" />}
-            >
-              <XIcon />
-            </DialogClose>
+            <Hint label="Close">
+              <DialogClose render={<Button variant="ghost" size="icon-sm" aria-label="Close" />}>
+                <XIcon />
+              </DialogClose>
+            </Hint>
           </div>
         </header>
         <DialogDescription className="sr-only">
@@ -166,9 +167,9 @@ export function CodeModal({ repoId, code, onClose }: CodeModalProps) {
         </div>
 
         <footer className="code-modal-foot">
-          <span className="code-modal-foot-path mono" title={code.path}>
-            {code.path}
-          </span>
+          <Hint side="top" label={code.path}>
+            <span className="code-modal-foot-path mono">{code.path}</span>
+          </Hint>
           <span className="code-modal-hint">{range ? `focused on ${range}` : "whole file"}</span>
           <span className="code-modal-hint code-modal-esc">
             <kbd>Esc</kbd> to close

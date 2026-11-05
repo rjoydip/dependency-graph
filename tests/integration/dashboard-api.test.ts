@@ -321,4 +321,39 @@ describe("index source (paths and GitHub URLs)", () => {
     expect((await json<{ error: string }>(github)).error).toBe("PATH_ESCAPE");
     scoped.graph.close();
   });
+
+  it("publishes graph-updated events over SSE", async () => {
+    const events: unknown[] = [];
+    const listener = (payload: unknown): void => {
+      events.push(payload);
+    };
+    app.events.on("graph-updated", listener);
+    try {
+      const res = await app.request(`/api/repositories/${repoId}/index`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ root: fixture.root }),
+      });
+      expect(res.status).toBe(200);
+    } finally {
+      app.events.off("graph-updated", listener);
+    }
+    expect(events).toHaveLength(1);
+
+    const stream = await app.request("/api/events");
+    expect(stream.status).toBe(200);
+    const reader = stream.body!.getReader();
+    app.events.emit("graph-updated", {
+      repositoryId: repoId,
+      nodeCount: 1,
+      edgeCount: 2,
+      revision: null,
+      indexedAt: "now",
+    });
+    const chunk = await reader.read();
+    const text = new TextDecoder().decode(chunk.value);
+    expect(text).toContain("event: graph-updated");
+    expect(text).toContain(repoId);
+    await reader.cancel();
+  });
 });

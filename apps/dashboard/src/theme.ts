@@ -13,46 +13,46 @@ export const TREE_ICONS: FileTreeIconConfig = {
 // dashboard and graph stay one palette per mode
 const PALETTES: Record<ThemeMode, { bg: string; fg: string; colors: Record<string, string> }> = {
   dark: {
-    bg: "#181420",
-    fg: "#f5f2f7",
+    bg: "#141821",
+    fg: "#f3f6fb",
     colors: {
-      "sideBar.background": "#181420",
-      "sideBar.foreground": "#f5f2f7",
-      "sideBar.border": "#2a2333",
-      "sideBarSectionHeader.foreground": "#b4a9bf",
-      "list.activeSelectionBackground": "#2a1f36",
-      "list.activeSelectionForeground": "#f5f2f7",
-      "list.focusBackground": "#221a2b",
-      "list.focusOutline": "#c73f92",
-      "list.hoverBackground": "#221a2b",
-      "input.background": "#221a2b",
-      "input.foreground": "#f5f2f7",
-      "input.border": "#3b2f47",
-      focusBorder: "#c73f92",
-      "scrollbarSlider.background": "#3b2f47",
+      "sideBar.background": "#141821",
+      "sideBar.foreground": "#f3f6fb",
+      "sideBar.border": "#232b3a",
+      "sideBarSectionHeader.foreground": "#aab4c4",
+      "list.activeSelectionBackground": "#1b2230",
+      "list.activeSelectionForeground": "#f3f6fb",
+      "list.focusBackground": "#1b2230",
+      "list.focusOutline": "#4f8cff",
+      "list.hoverBackground": "#1b2230",
+      "input.background": "#1b2230",
+      "input.foreground": "#f3f6fb",
+      "input.border": "#324056",
+      focusBorder: "#4f8cff",
+      "scrollbarSlider.background": "#324056",
       "gitDecoration.addedResourceForeground": "#4ade80",
       "gitDecoration.modifiedResourceForeground": "#f0b429",
       "gitDecoration.deletedResourceForeground": "#f05252",
     },
   },
   light: {
-    bg: "#f6f2f9",
-    fg: "#1c1420",
+    bg: "#f3f6fb",
+    fg: "#141a23",
     colors: {
-      "sideBar.background": "#f6f2f9",
-      "sideBar.foreground": "#1c1420",
-      "sideBar.border": "#e6ddeb",
-      "sideBarSectionHeader.foreground": "#5c4f66",
-      "list.activeSelectionBackground": "#ece4f2",
-      "list.activeSelectionForeground": "#1c1420",
-      "list.focusBackground": "#ece4f2",
-      "list.focusOutline": "#a03370",
-      "list.hoverBackground": "#ece4f2",
+      "sideBar.background": "#f3f6fb",
+      "sideBar.foreground": "#141a23",
+      "sideBar.border": "#dde4ee",
+      "sideBarSectionHeader.foreground": "#536071",
+      "list.activeSelectionBackground": "#e8eef7",
+      "list.activeSelectionForeground": "#141a23",
+      "list.focusBackground": "#e8eef7",
+      "list.focusOutline": "#2563eb",
+      "list.hoverBackground": "#e8eef7",
       "input.background": "#ffffff",
-      "input.foreground": "#1c1420",
-      "input.border": "#d4c7de",
-      focusBorder: "#a03370",
-      "scrollbarSlider.background": "#d4c7de",
+      "input.foreground": "#141a23",
+      "input.border": "#c9d4e4",
+      focusBorder: "#2563eb",
+      "scrollbarSlider.background": "#c9d4e4",
       "gitDecoration.addedResourceForeground": "#15803d",
       "gitDecoration.modifiedResourceForeground": "#a16207",
       "gitDecoration.deletedResourceForeground": "#dc2626",
@@ -62,7 +62,7 @@ const PALETTES: Record<ThemeMode, { bg: string; fg: string; colors: Record<strin
 
 export function treeThemeStyles(theme: ThemeMode): CSSProperties {
   const palette = PALETTES[theme];
-  const accent = theme === "dark" ? "#c73f92" : "#a03370";
+  const accent = theme === "dark" ? "#4f8cff" : "#2563eb";
   const derived = themeToTreeStyles({
     type: theme,
     bg: palette.bg,
@@ -75,7 +75,7 @@ export function treeThemeStyles(theme: ThemeMode): CSSProperties {
   delete derived.minHeight;
   return {
     ...derived,
-    // documented override layer: selection and focus follow the brand magenta
+    // documented override layer: selection and focus follow the blue accent
     "--trees-accent-override": accent,
     "--trees-theme-list-active-selection-bg": `color-mix(in oklab, ${accent} 20%, transparent)`,
     "--trees-theme-focus-ring": accent,
