@@ -508,12 +508,12 @@ export function App() {
         </header>
         <div className="center-stage">
           <div className="hero">
-            <h2>Index a repository</h2>
+            <h2>{staticMode ? "Explore a snapshot" : "Index a repository"}</h2>
             {staticMode ? (
               <p className="static-note">
-                This is the static dashboard deployment. Load a Relic snapshot file to explore a
-                graph — indexing and re-indexing need the local Relic API. Run <code>relic</code>{" "}
-                locally, or rebuild with <code>VITE_RELIC_API_URL</code> pointing at a hosted API.
+                This hosted dashboard is read-only. Load a <code>.json</code> snapshot exported from
+                Relic to browse its dependency graph — indexing and re-indexing run in the local
+                app. Use <strong>Download snapshot</strong> there to create one.
               </p>
             ) : (
               <>
