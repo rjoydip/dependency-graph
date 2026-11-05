@@ -1,13 +1,17 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeftIcon, ChevronRightIcon, FileCodeIcon, PanelRightCloseIcon } from "lucide-react";
-import { api, type EvidenceStep, type GraphNodeDto } from "./api";
+import { api, type EvidenceStep, type GraphEdgeDto, type GraphNodeDto } from "./api";
 import type { CodeTarget } from "./CodeModal";
 import { COLOR } from "./layout";
 
 interface InspectorProps {
   repoId: string;
   node: GraphNodeDto | null;
+  /** client-side snapshot mode — relationships come from the snapshot, not the API */
+  offline: boolean;
+  nodes: GraphNodeDto[];
+  edges: GraphEdgeDto[];
   canGoBack: boolean;
   canGoForward: boolean;
   onBack: () => void;
@@ -20,6 +24,9 @@ interface InspectorProps {
 export function NodeInspector({
   repoId,
   node,
+  offline,
+  nodes,
+  edges,
   canGoBack,
   canGoForward,
   onBack,
@@ -36,6 +43,18 @@ export function NodeInspector({
     if (!node) {
       setSteps([]);
       setTests([]);
+      return;
+    }
+    if (offline) {
+      const byId = new Map(nodes.map((n) => [n.id, n]));
+      const local: EvidenceStep[] = [];
+      for (const edge of edges) {
+        if (edge.sourceId !== node.id && edge.targetId !== node.id) continue;
+        const other = byId.get(edge.sourceId === node.id ? edge.targetId : edge.sourceId);
+        if (other) local.push({ edge, node: other });
+      }
+      setSteps(local);
+      setTests(local.map((s) => s.node).filter((n) => n.type === "test"));
       return;
     }
     let cancelled = false;
@@ -57,7 +76,7 @@ export function NodeInspector({
     return () => {
       cancelled = true;
     };
-  }, [node?.id, repoId]);
+  }, [node?.id, repoId, offline, nodes, edges]);
 
   if (!node) {
     return (
@@ -144,22 +163,24 @@ export function NodeInspector({
                 {node.endLine && node.endLine !== node.startLine ? `–${node.endLine}` : ""}
               </span>
               {/* explicit affordance: opening the file viewer is opt-in */}
-              <Button
-                variant="ghost"
-                size="icon-xs"
-                className="code-open"
-                title="Open file content"
-                aria-label="Open file content"
-                onClick={() =>
-                  onOpenCode({
-                    path: node.filePath!,
-                    startLine: node.startLine,
-                    endLine: node.endLine,
-                  })
-                }
-              >
-                <FileCodeIcon />
-              </Button>
+              {!offline && (
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  className="code-open"
+                  title="Open file content"
+                  aria-label="Open file content"
+                  onClick={() =>
+                    onOpenCode({
+                      path: node.filePath!,
+                      startLine: node.startLine,
+                      endLine: node.endLine,
+                    })
+                  }
+                >
+                  <FileCodeIcon />
+                </Button>
+              )}
             </dd>
           </>
         )}
@@ -170,14 +191,24 @@ export function NodeInspector({
       {split.incoming.length > 0 && (
         <section>
           <h3>Incoming ({split.incoming.length})</h3>
-          <EdgeList steps={split.incoming} onSelect={onSelect} onOpenCode={onOpenCode} />
+          <EdgeList
+            steps={split.incoming}
+            offline={offline}
+            onSelect={onSelect}
+            onOpenCode={onOpenCode}
+          />
         </section>
       )}
 
       {split.outgoing.length > 0 && (
         <section>
           <h3>Outgoing ({split.outgoing.length})</h3>
-          <EdgeList steps={split.outgoing} onSelect={onSelect} onOpenCode={onOpenCode} />
+          <EdgeList
+            steps={split.outgoing}
+            offline={offline}
+            onSelect={onSelect}
+            onOpenCode={onOpenCode}
+          />
         </section>
       )}
 
@@ -208,10 +239,12 @@ function isIncoming(step: EvidenceStep, nodeId: string): boolean {
 /** One relationship per card: target node, edge type, confidence, evidence. */
 function EdgeList({
   steps,
+  offline,
   onSelect,
   onOpenCode,
 }: {
   steps: EvidenceStep[];
+  offline: boolean;
   onSelect: (id: string) => void;
   onOpenCode: (code: CodeTarget) => void;
 }) {
@@ -239,16 +272,22 @@ function EdgeList({
               <span className="edge-conf" title="Confidence">
                 {Math.round(edge.confidence * 100)}%
               </span>
-              {file && (
-                <button
-                  className="edge-file mono"
-                  title={`Open ${file}${line ? `:${line}` : ""}`}
-                  onClick={() => onOpenCode({ path: file, startLine: line, endLine: line })}
-                >
-                  {file.split(/[\\/]/).pop()}
-                  {line ? `:${line}` : ""}
-                </button>
-              )}
+              {file &&
+                (offline ? (
+                  <span className="edge-file mono" title={file}>
+                    {file.split(/[\\/]/).pop()}
+                    {line ? `:${line}` : ""}
+                  </span>
+                ) : (
+                  <button
+                    className="edge-file mono"
+                    title={`Open ${file}${line ? `:${line}` : ""}`}
+                    onClick={() => onOpenCode({ path: file, startLine: line, endLine: line })}
+                  >
+                    {file.split(/[\\/]/).pop()}
+                    {line ? `:${line}` : ""}
+                  </button>
+                ))}
               {edge.evidence.note && (
                 <span className="edge-note" title={edge.evidence.note}>
                   {edge.evidence.note}

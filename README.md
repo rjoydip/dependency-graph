@@ -129,8 +129,9 @@ it implicitly). `.github/workflows/deploy.yml` builds and deploys on pushes to
 
 Only the static surface is deployed. The API stays local: it depends on
 `node:sqlite`, child processes and filesystem indexing, none of which run in a
-Worker. The deployed dashboard detects the missing API and disables indexing
-with an explanatory notice.
+Worker. The deployed dashboard detects the missing API, disables indexing and
+re-indexing, and lets you load a Relic snapshot file entirely in the browser to
+explore a graph read-only.
 
 To use indexing on a deployed dashboard, host the API somewhere that can run
 Node (container or VM) and build the dashboard with its origin:

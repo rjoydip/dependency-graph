@@ -89,6 +89,8 @@ export function App() {
   const [error, setError] = useState<string | null>(null);
   // deployed as static assets only (Cloudflare) — no API behind /api
   const [staticMode, setStaticMode] = useState(false);
+  // client-side snapshot (static deployments have no API to import into)
+  const [snapshotRepo, setSnapshotRepo] = useState<Repository | null>(null);
   const [inspectorOpen, setInspectorOpen] = useState(true);
   const [explorerOpen, setExplorerOpen] = useState(true);
   // node visit trail for back/forward navigation in the details panel
@@ -128,7 +130,7 @@ export function App() {
     localStorage.setItem("relic-explorer", explorerView);
   }, [explorerView]);
 
-  const repo = repositories.find((r) => r.id === repoId) ?? null;
+  const repo = snapshotRepo ?? repositories.find((r) => r.id === repoId) ?? null;
 
   // Breadcrumb shows the last few path segments so the repo folder (the part
   // that identifies it) survives truncation; the full path is in the title.
@@ -294,6 +296,7 @@ export function App() {
     setInspectorOpen(true);
     setExplorerOpen(true);
     setTrail({ ids: [], index: -1 });
+    setSnapshotRepo(null);
     setError(null);
   }, []);
 
@@ -335,6 +338,33 @@ export function App() {
       setError(null);
       try {
         const snapshot = JSON.parse(await file.text()) as Snapshot;
+        if (staticMode) {
+          const id = `snapshot:${snapshot.repository.name}`;
+          setSnapshotRepo({
+            id,
+            name: snapshot.repository.name,
+            rootPath: snapshot.repository.rootPath,
+            lastRevision: snapshot.repository.lastRevision,
+            indexedAt: snapshot.repository.indexedAt,
+            fileCount: snapshot.repository.fileCount,
+            nodeCount: snapshot.nodes.length,
+            edgeCount: snapshot.edges.length,
+          });
+          setRepositories([]);
+          setRepoId(id);
+          setNodes(snapshot.nodes);
+          setEdges(snapshot.edges);
+          setStatus({
+            lastRevision: snapshot.repository.lastRevision,
+            indexedAt: snapshot.repository.indexedAt,
+            durationMs: snapshot.repository.durationMs,
+            fileCount: snapshot.repository.fileCount,
+            nodeCount: snapshot.nodes.length,
+            edgeCount: snapshot.edges.length,
+            diagnostics: snapshot.repository.diagnostics,
+          });
+          return;
+        }
         const result = await api.importSnapshot(snapshot);
         const list = await api.repositories();
         setRepositories(list.repositories);
@@ -347,7 +377,7 @@ export function App() {
         setIndexing(false);
       }
     },
-    [loadGraph],
+    [loadGraph, staticMode],
   );
 
   const visibleNodes = useMemo(
@@ -434,7 +464,7 @@ export function App() {
         <BookOpenIcon />
         <span>Docs</span>
       </a>
-      {repoId && (
+      {repoId && !staticMode && (
         <Button
           variant="ghost"
           size="icon-sm"
@@ -446,7 +476,7 @@ export function App() {
           {reindexing ? <span className="spinner mini" /> : <RefreshIcon />}
         </Button>
       )}
-      {repoId && (
+      {repoId && !staticMode && (
         <Button
           variant="ghost"
           size="icon-sm"
@@ -481,9 +511,9 @@ export function App() {
             <h2>Index a repository</h2>
             {staticMode ? (
               <p className="static-note">
-                This is the static dashboard deployment — there is no API behind it, so indexing and
-                snapshot import are unavailable. Run <code>relic</code> locally, or rebuild with{" "}
-                <code>VITE_RELIC_API_URL</code> pointing at a hosted Relic API.
+                This is the static dashboard deployment. Load a Relic snapshot file to explore a
+                graph — indexing and re-indexing need the local Relic API. Run <code>relic</code>{" "}
+                locally, or rebuild with <code>VITE_RELIC_API_URL</code> pointing at a hosted API.
               </p>
             ) : (
               <>
@@ -491,7 +521,7 @@ export function App() {
                 <IndexForm busy={indexing} onIndex={runIndex} />
               </>
             )}
-            <div className="hero-actions" hidden={staticMode}>
+            <div className="hero-actions">
               <Button
                 variant="outline"
                 size="sm"
@@ -551,7 +581,7 @@ export function App() {
     >
       <header>
         {brandButton}
-        <IndexForm busy={indexing} onIndex={runIndex} />
+        {!staticMode && <IndexForm busy={indexing} onIndex={runIndex} />}
         {/* breadcrumb: full path in faded segments, the repo folder (the
             app name) emphasised; GitHub clones stage into a hashed temp
             dir — that segment never shows */}
@@ -596,45 +626,52 @@ export function App() {
       <main>
         {explorerOpen && (
           <aside className="explorer">
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full justify-between font-normal"
-                  />
-                }
-              >
-                <span className="repo-trigger">
-                  <FolderGit2Icon />
-                  <span className="repo-trigger-name">{repo?.name ?? "Repository"}</span>
-                  {repo && (
-                    <span className="repo-trigger-hash">
-                      ({repo.id.replace(/^repo_/, "").slice(0, 7)})
-                    </span>
-                  )}
-                </span>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-[var(--anchor-width)]">
-                <DropdownMenuRadioGroup
-                  value={repoId ?? ""}
-                  onValueChange={(id) => id && switchRepo(id)}
+            {staticMode ? (
+              <span className="repo-trigger repo-static">
+                <FolderGit2Icon />
+                <span className="repo-trigger-name">{repo?.name ?? "Snapshot"}</span>
+              </span>
+            ) : (
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full justify-between font-normal"
+                    />
+                  }
                 >
-                  {repositories.map((r) => (
-                    <DropdownMenuRadioItem key={r.id} value={r.id}>
-                      <span className="repo-trigger">
-                        <FolderGit2Icon />
-                        <span className="repo-trigger-name">{r.name}</span>
-                        <span className="repo-trigger-hash">
-                          ({r.id.replace(/^repo_/, "").slice(0, 7)})
-                        </span>
+                  <span className="repo-trigger">
+                    <FolderGit2Icon />
+                    <span className="repo-trigger-name">{repo?.name ?? "Repository"}</span>
+                    {repo && (
+                      <span className="repo-trigger-hash">
+                        ({repo.id.replace(/^repo_/, "").slice(0, 7)})
                       </span>
-                    </DropdownMenuRadioItem>
-                  ))}
-                </DropdownMenuRadioGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                    )}
+                  </span>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-[var(--anchor-width)]">
+                  <DropdownMenuRadioGroup
+                    value={repoId ?? ""}
+                    onValueChange={(id) => id && switchRepo(id)}
+                  >
+                    {repositories.map((r) => (
+                      <DropdownMenuRadioItem key={r.id} value={r.id}>
+                        <span className="repo-trigger">
+                          <FolderGit2Icon />
+                          <span className="repo-trigger-name">{r.name}</span>
+                          <span className="repo-trigger-hash">
+                            ({r.id.replace(/^repo_/, "").slice(0, 7)})
+                          </span>
+                        </span>
+                      </DropdownMenuRadioItem>
+                    ))}
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
             <h2>
               <span className="explorer-title">
                 Explorer <span className="count">{visibleNodes.length}</span>
@@ -796,6 +833,9 @@ export function App() {
           <NodeInspector
             repoId={repoId ?? ""}
             node={selected}
+            offline={staticMode}
+            nodes={nodes}
+            edges={edges}
             canGoBack={trail.index > 0}
             canGoForward={trail.index >= 0 && trail.index < trail.ids.length - 1}
             onBack={() => navigateTrail(-1)}

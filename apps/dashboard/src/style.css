@@ -563,6 +563,18 @@ aside.explorer h2 {
   color: var(--faint);
   font-size: 11px;
 }
+.repo-static {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+span.edge-file {
+  cursor: default;
+}
+span.edge-file:hover {
+  text-decoration: none;
+}
 .explorer-title {
   display: inline-flex;
   align-items: baseline;

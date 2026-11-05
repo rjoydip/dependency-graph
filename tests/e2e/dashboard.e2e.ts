@@ -167,12 +167,69 @@ test("indexed repository can be deleted from the cache", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Index a repository" })).toBeVisible();
 });
 
-test("static deployment without an API shows the notice instead of the form", async ({ page }) => {
+test("static deployment renders snapshots client-side without the API", async ({ page }) => {
   await page.route("**/api/repositories", (route) => route.fulfill({ status: 404, body: "" }));
   await page.goto("/");
   await expect(page.locator(".static-note")).toBeVisible();
   await expect(page.getByLabel("Repository source")).toHaveCount(0);
-  await expect(page.locator(".hero-actions")).toBeHidden();
+  await expect(page.getByLabel("Re-index repository")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Load snapshot" })).toBeVisible();
+
+  const snapshot = {
+    format: "relic-snapshot",
+    version: 1,
+    repository: {
+      name: "demo",
+      rootPath: "/demo",
+      lastRevision: null,
+      indexedAt: null,
+      durationMs: null,
+      fileCount: 1,
+      diagnostics: [],
+    },
+    nodes: [
+      {
+        id: "a",
+        type: "file",
+        name: "src/a.ts",
+        qualifiedName: null,
+        filePath: "src/a.ts",
+        startLine: null,
+        endLine: null,
+      },
+      {
+        id: "b",
+        type: "symbol",
+        name: "foo",
+        qualifiedName: "foo",
+        filePath: "src/a.ts",
+        startLine: 1,
+        endLine: 2,
+        metadata: { kind: "function" },
+      },
+    ],
+    edges: [
+      {
+        id: "e1",
+        sourceId: "a",
+        targetId: "b",
+        type: "DECLARES",
+        confidence: 1,
+        evidence: { source: "static", file: "src/a.ts", line: 1 },
+      },
+    ],
+  };
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "snapshot.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(snapshot)),
+  });
+  await expect(page.locator(GRAPH_NODES).first()).toBeVisible();
+  await page.locator(GRAPH_NODES).first().click();
+  await expect(page.locator(".inspector")).toBeVisible();
+  await expect(page.locator(".edge-item")).toHaveCount(1);
+  // no file viewer without the API
+  await expect(page.locator(".code-open")).toHaveCount(0);
 });
 
 test("theme toggle flips the data-theme attribute", async ({ page }) => {
