@@ -1,5 +1,15 @@
+import { execFileSync } from "node:child_process";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "bun:test";
-import { ownersFor, parseBlamePorcelain, parseCodeowners } from "@relic/analyzer-typescript";
+import {
+  blameRange,
+  loadCodeowners,
+  ownersFor,
+  parseBlamePorcelain,
+  parseCodeowners,
+} from "@relic/analyzer-typescript";
 
 const rules = parseCodeowners(`
 # comment
@@ -57,5 +67,40 @@ describe("git blame parsing", () => {
       lines: 2,
     });
     expect(result.authors[1]).toMatchObject({ name: "Grace", lines: 1 });
+  });
+});
+
+describe("CODEOWNERS loading and blame", () => {
+  it("reads the first CODEOWNERS location and missing files return no rules", () => {
+    const root = mkdtempSync(join(tmpdir(), "relic-owners-"));
+    try {
+      mkdirSync(join(root, ".github"), { recursive: true });
+      writeFileSync(join(root, ".github", "CODEOWNERS"), "src/** @team\n");
+      expect(loadCodeowners(root)).toEqual([
+        { pattern: "src/**", owners: ["@team"], negated: false },
+      ]);
+      expect(loadCodeowners(join(root, "missing"))).toEqual([]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("summarises blame for a real git commit and returns null outside git", () => {
+    const root = mkdtempSync(join(tmpdir(), "relic-blame-"));
+    try {
+      execFileSync("git", ["init"], { cwd: root, stdio: "pipe" });
+      execFileSync("git", ["config", "user.email", "test@example.com"], { cwd: root });
+      execFileSync("git", ["config", "user.name", "Test"], { cwd: root });
+      writeFileSync(join(root, "a.ts"), "const a = 1;\nconst b = 2;\n");
+      execFileSync("git", ["add", "."], { cwd: root, stdio: "pipe" });
+      execFileSync("git", ["commit", "-m", "first"], { cwd: root, stdio: "pipe" });
+
+      const blame = blameRange(root, "a.ts", 1, 2);
+      expect(blame?.lineCount).toBe(2);
+      expect(blame?.authors[0]?.name).toBe("Test");
+      expect(blameRange(root, "missing.ts", 1, 2)).toBeNull();
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 });

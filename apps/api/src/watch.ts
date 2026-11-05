@@ -13,7 +13,7 @@ export function shouldIgnoreWatchPath(relativePath: string): boolean {
  * Incrementally re-index on file changes (debounced) and push an SSE event.
  * Branch switches are NOT detected — run an explicit index after checkout.
  */
-export function startWatcher(app: RelicApp, rootPath: string): () => void {
+export function startWatcher(app: RelicApp, rootPath: string, debounceMs = 250): () => void {
   let timer: ReturnType<typeof setTimeout> | null = null;
   let running = false;
   let queued = false;
@@ -53,7 +53,7 @@ export function startWatcher(app: RelicApp, rootPath: string): () => void {
     timer = setTimeout(() => {
       timer = null;
       reindex();
-    }, 250);
+    }, debounceMs);
   });
   watcher.on("error", (err) => console.error("watch error:", err));
   console.error(

@@ -3,7 +3,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "bun:test";
 import type { GraphNode } from "@relic/graph-core";
-import { MAX_EXCERPT_LINES, sourceExcerpt } from "../../../apps/mcp-server/src/helpers";
+import {
+  MAX_EXCERPT_LINES,
+  coerceNodeType,
+  coerceRepositoryId,
+  sourceExcerpt,
+} from "../../../apps/mcp-server/src/helpers";
 
 const node = (overrides: Partial<GraphNode>): GraphNode => ({
   id: "n1",
@@ -47,5 +52,19 @@ describe("sourceExcerpt", () => {
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
+  });
+});
+
+describe("input coercion", () => {
+  it("keeps an indexed id, resolves a path, and rejects empty repositories", () => {
+    expect(coerceRepositoryId("repo_123", (id) => id === "repo_123")).toBe("repo_123");
+    expect(coerceRepositoryId("C:/code", () => false)).toMatch(/^repo_/);
+    expect(() => coerceRepositoryId("   ", () => false)).toThrow("repository is required");
+  });
+
+  it("accepts known node types and rejects unknown ones", () => {
+    expect(coerceNodeType(undefined)).toBeUndefined();
+    expect(coerceNodeType("symbol")).toBe("symbol");
+    expect(() => coerceNodeType("nonsense")).toThrow("Unknown node type");
   });
 });

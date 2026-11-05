@@ -1,5 +1,5 @@
 import type { Evidence, GraphNode, GraphRepository, GraphService } from "@relic/graph-core";
-import { changedRanges, symbolsForRanges } from "@relic/indexer";
+import { changedRanges, symbolsForRanges, type ChangedRange } from "@relic/indexer";
 
 export interface PrAffectedRow {
   node: GraphNode;
@@ -27,7 +27,16 @@ export function collectPrImpact(
   base?: string,
   head?: string,
 ): PrImpact {
-  const ranges = changedRanges(rootPath, base, head);
+  return aggregatePrImpact(graph, repository, repositoryId, changedRanges(rootPath, base, head));
+}
+
+/** Pure aggregation over an already-known changed-line set (unit-testable). */
+export function aggregatePrImpact(
+  graph: GraphService,
+  repository: GraphRepository,
+  repositoryId: string,
+  ranges: ChangedRange[],
+): PrImpact {
   const changedNodes = ranges.flatMap((range) =>
     repository.listNodes({ repositoryId, filePath: range.filePath, limit: 2000 }),
   );
@@ -107,47 +116,74 @@ export function formatPrImpact(report: PrImpact): string {
     );
   }
 
-  lines.push("", "### Changed files", "");
-  if (report.changedFiles.length === 0) lines.push("_No changed files detected._");
-  for (const file of report.changedFiles) {
-    lines.push(
-      `- \`${file.filePath}\` (${file.changedLines} line${file.changedLines === 1 ? "" : "s"})`,
-    );
-  }
+  lines.push(
+    "",
+    ...details(`Changed files (${report.changedFiles.length})`, () => {
+      const body: string[] = [];
+      if (report.changedFiles.length === 0) body.push("_No changed files detected._");
+      for (const file of report.changedFiles) {
+        body.push(
+          `- \`${file.filePath}\` (${file.changedLines} line${file.changedLines === 1 ? "" : "s"})`,
+        );
+      }
+      return body;
+    }),
+  );
 
-  lines.push("", "### Changed symbols", "");
-  if (report.changedSymbols.length === 0) {
-    lines.push("_No indexed symbols intersect the changed lines._");
-  }
-  for (const symbol of report.changedSymbols) {
-    lines.push(`- \`${symbol.qualifiedName ?? symbol.name}\` — \`${location(symbol)}\``);
-  }
+  lines.push(
+    "",
+    ...details(`Changed symbols (${report.changedSymbols.length})`, () => {
+      const body: string[] = [];
+      if (report.changedSymbols.length === 0) {
+        body.push("_No indexed symbols intersect the changed lines._");
+      }
+      for (const symbol of report.changedSymbols) {
+        body.push(`- \`${symbol.qualifiedName ?? symbol.name}\` — \`${location(symbol)}\``);
+      }
+      return body;
+    }),
+  );
 
-  lines.push("", "### Blast radius", "");
-  if (report.affected.length === 0) {
-    lines.push("_Nothing depends on the changed symbols._");
-  }
-  for (const row of report.affected.slice(0, MAX_ROWS)) {
-    const confidence = Math.round(row.confidence * 100);
-    const evidence = row.evidence.file
-      ? `${row.evidence.file}${row.evidence.line ? `:${row.evidence.line}` : ""}`
-      : null;
-    lines.push(
-      `- \`${row.node.qualifiedName ?? row.node.name}\` — ${row.relationship} · depth ${row.depth} · ${confidence}%` +
-        (evidence ? ` · \`${evidence}\`` : ""),
-    );
-  }
-  if (report.affected.length > MAX_ROWS) {
-    lines.push(`- …and ${report.affected.length - MAX_ROWS} more`);
-  }
+  lines.push(
+    "",
+    ...details(`Blast radius (${report.affected.length})`, () => {
+      const body: string[] = [];
+      if (report.affected.length === 0) body.push("_Nothing depends on the changed symbols._");
+      for (const row of report.affected.slice(0, MAX_ROWS)) {
+        const confidence = Math.round(row.confidence * 100);
+        const evidence = row.evidence.file
+          ? `${row.evidence.file}${row.evidence.line ? `:${row.evidence.line}` : ""}`
+          : null;
+        body.push(
+          `- \`${row.node.qualifiedName ?? row.node.name}\` — ${row.relationship} · depth ${row.depth} · ${confidence}%` +
+            (evidence ? ` · \`${evidence}\`` : ""),
+        );
+      }
+      if (report.affected.length > MAX_ROWS) {
+        body.push(`- …and ${report.affected.length - MAX_ROWS} more`);
+      }
+      return body;
+    }),
+  );
 
-  lines.push("", "### Related tests", "");
-  if (report.tests.length === 0) lines.push("_No related tests indexed._");
-  for (const test of report.tests) {
-    lines.push(`- \`${test.qualifiedName ?? test.name}\``);
-  }
+  lines.push(
+    "",
+    ...details(`Related tests (${report.tests.length})`, () => {
+      const body: string[] = [];
+      if (report.tests.length === 0) body.push("_No related tests indexed._");
+      for (const test of report.tests) {
+        body.push(`- \`${test.qualifiedName ?? test.name}\``);
+      }
+      return body;
+    }),
+  );
 
   return `${lines.join("\n")}\n`;
+}
+
+/** GitHub-flavoured `<details>` block so long PR lists stay collapsed. */
+function details(title: string, body: () => string[]): string[] {
+  return [`<details>`, `<summary>${title}</summary>`, "", ...body(), "", `</details>`];
 }
 
 function location(node: GraphNode): string {
