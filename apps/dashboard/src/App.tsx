@@ -512,7 +512,7 @@ export function App() {
                 }}
               />
             </div>
-            {error && <div className="error">{error}</div>}
+            {error && !staticMode && <div className="error">{error}</div>}
             {repositories.length > 0 && (
               <section className="repo-history">
                 <h3>Indexed repositories ({repositories.length})</h3>
