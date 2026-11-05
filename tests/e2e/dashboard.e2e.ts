@@ -40,13 +40,14 @@ test("opens at a readable zoom anchored to the graph top", async ({ page }) => {
   // vertically centred the way fitView would leave it
   let minTop = Number.POSITIVE_INFINITY;
   let minLeft = Number.POSITIVE_INFINITY;
-  const nodeCount = await page.locator(GRAPH_NODES).count();
-  for (let i = 0; i < nodeCount; i++) {
-    const box = await page.locator(GRAPH_NODES).nth(i).boundingBox();
-    if (box) {
-      minTop = Math.min(minTop, box.y);
-      minLeft = Math.min(minLeft, box.x);
-    }
+  // OnlyRenderVisibleElements means the DOM contains a subset of the graph;
+  // snapshot the rendered handles instead of waiting on index-based locators.
+  const handles = await page.locator(GRAPH_NODES).elementHandles();
+  for (const handle of handles) {
+    const box = await handle.boundingBox();
+    if (!box) continue;
+    minTop = Math.min(minTop, box.y);
+    minLeft = Math.min(minLeft, box.x);
   }
   expect(minTop).toBeGreaterThan(0);
   expect(minTop).toBeLessThan(120);
@@ -213,7 +214,9 @@ test("inspector shows owners, coupling, risk, and highlights a cycle", async ({ 
   const cycle = inspector.locator(".cycle-item");
   await expect(cycle).toHaveCount(1);
   await cycle.getByRole("button", { name: "Highlight" }).click();
-  await expect(page.locator(`${GRAPH_NODES}.cycle`)).toHaveCount(2);
+  await expect(inspector.getByRole("button", { name: "Clear highlight" })).toBeVisible();
+  // Only visible cards are in the DOM; the selected cycle member must be marked.
+  await expect.poll(() => page.locator(`${GRAPH_NODES}.cycle`).count()).toBeGreaterThan(0);
 });
 
 test("metadata button opens the index summary", async ({ page }) => {
