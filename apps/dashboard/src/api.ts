@@ -62,8 +62,12 @@ export interface IndexStatusDto {
   diagnostics: Array<{ kind: string; message: string; file?: string }>;
 }
 
+// Static deployments (Cloudflare) have no API of their own; point the build at
+// a separately hosted Relic API with VITE_RELIC_API_URL (e.g. https://api.example.com).
+const API_ORIGIN = (import.meta.env.VITE_RELIC_API_URL ?? "").replace(/\/$/, "");
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`/api${path}`, init);
+  const res = await fetch(`${API_ORIGIN}/api${path}`, init);
   const body = (await res.json().catch(() => ({}))) as T & { error?: string; message?: string };
   if (!res.ok)
     throw new Error(

@@ -4,6 +4,7 @@ import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve, sep } from "node:path";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { GraphError } from "@relic/graph-core";
 import type { EdgeType, GraphEdge, GraphNode, NodeType, RepositoryMeta } from "@relic/graph-core";
 import { openGraph, repositoryIdFor, type OpenGraph } from "@relic/indexer";
@@ -89,6 +90,8 @@ export function buildApp(options: ApiOptions): Hono & { graph: OpenGraph } {
   const store = openGraph(options.dbPath);
   const app = new Hono() as Hono & { graph: OpenGraph };
   app.graph = store;
+  // the dashboard can be hosted separately (static Worker, Vite on another port)
+  app.use("/api/*", cors());
 
   const fail = (
     c: { json: (body: unknown, status: number) => Response },

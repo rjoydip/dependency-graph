@@ -129,7 +129,17 @@ it implicitly). `.github/workflows/deploy.yml` builds and deploys on pushes to
 
 Only the static surface is deployed. The API stays local: it depends on
 `node:sqlite`, child processes and filesystem indexing, none of which run in a
-Worker. Point a deployment at a separately hosted API if you need one.
+Worker. The deployed dashboard detects the missing API and disables indexing
+with an explanatory notice.
+
+To use indexing on a deployed dashboard, host the API somewhere that can run
+Node (container or VM) and build the dashboard with its origin:
+
+```sh
+VITE_RELIC_API_URL=https://relic-api.example.com bun run site:build
+```
+
+The build then calls `https://relic-api.example.com/api/*` instead of `/api/*`.
 
 ## Indexing semantics
 

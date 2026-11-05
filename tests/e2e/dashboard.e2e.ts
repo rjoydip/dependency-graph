@@ -167,6 +167,14 @@ test("indexed repository can be deleted from the cache", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Index a repository" })).toBeVisible();
 });
 
+test("static deployment without an API shows the notice instead of the form", async ({ page }) => {
+  await page.route("**/api/repositories", (route) => route.fulfill({ status: 404, body: "" }));
+  await page.goto("/");
+  await expect(page.locator(".static-note")).toBeVisible();
+  await expect(page.getByLabel("Repository source")).toHaveCount(0);
+  await expect(page.locator(".hero-actions")).toBeHidden();
+});
+
 test("theme toggle flips the data-theme attribute", async ({ page }) => {
   await page.goto("/");
   const html = page.locator("html");

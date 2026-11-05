@@ -87,6 +87,8 @@ export function App() {
     localStorage.getItem("relic-explorer") === "flat" ? "flat" : "tree",
   );
   const [error, setError] = useState<string | null>(null);
+  // deployed as static assets only (Cloudflare) — no API behind /api
+  const [staticMode, setStaticMode] = useState(false);
   const [inspectorOpen, setInspectorOpen] = useState(true);
   const [explorerOpen, setExplorerOpen] = useState(true);
   // node visit trail for back/forward navigation in the details panel
@@ -173,7 +175,10 @@ export function App() {
           await loadGraph(list.repositories[0].id);
         }
       })
-      .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)))
+      .catch((err: unknown) => {
+        if (err instanceof Error && /Request failed \(404\)/.test(err.message)) setStaticMode(true);
+        setError(err instanceof Error ? err.message : String(err));
+      })
       .finally(() => setLoading(false));
   }, [loadGraph]);
 
@@ -215,6 +220,7 @@ export function App() {
         setRepoId(result.repositoryId);
         await loadGraph(result.repositoryId);
       } catch (err) {
+        if (err instanceof Error && /Request failed \(404\)/.test(err.message)) setStaticMode(true);
         setError(err instanceof Error ? err.message : String(err));
       } finally {
         setIndexing(false);
@@ -335,6 +341,7 @@ export function App() {
         setRepoId(result.repositoryId);
         await loadGraph(result.repositoryId);
       } catch (err) {
+        if (err instanceof Error && /Request failed \(404\)/.test(err.message)) setStaticMode(true);
         setError(err instanceof Error ? err.message : String(err));
       } finally {
         setIndexing(false);
@@ -472,9 +479,19 @@ export function App() {
         <div className="center-stage">
           <div className="hero">
             <h2>Index a repository</h2>
-            <p className="muted">Enter a local path or a GitHub URL to build the graph.</p>
-            <IndexForm busy={indexing} onIndex={runIndex} />
-            <div className="hero-actions">
+            {staticMode ? (
+              <p className="static-note">
+                This is the static dashboard deployment — there is no API behind it, so indexing and
+                snapshot import are unavailable. Run <code>relic</code> locally, or rebuild with{" "}
+                <code>VITE_RELIC_API_URL</code> pointing at a hosted Relic API.
+              </p>
+            ) : (
+              <>
+                <p className="muted">Enter a local path or a GitHub URL to build the graph.</p>
+                <IndexForm busy={indexing} onIndex={runIndex} />
+              </>
+            )}
+            <div className="hero-actions" hidden={staticMode}>
               <Button
                 variant="outline"
                 size="sm"
