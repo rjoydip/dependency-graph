@@ -12,7 +12,7 @@ The core promise: when you ask "what breaks if I change `UserService.updateUser`
 
 ```sh
 packages/
-  graph-core/             domain types, GraphRepository interface, GraphService (impact analysis)
+  core/                   domain types, GraphRepository interface, GraphService (impact analysis)
   database/               node:sqlite storage behind GraphRepository (recursive-CTE traversal)
   analyzer/
     core/                 shared analyzer contract, discovery, resolver, manifests
@@ -23,7 +23,7 @@ packages/
     go/                   Go analyzer
   indexer/                incremental indexing (hash change detection, importer re-expansion), runtime evidence
 apps/
-  mcp-server/             MCP stdio server: 15 tools, 3 resources, 2 prompts
+  mcp/                    MCP stdio server: 15 tools, 3 resources, 2 prompts
   api/                    Hono API + the publishable package: `relic` CLI and `relic-mcp` bins
   dashboard/              React + React Flow graph explorer
 tests/

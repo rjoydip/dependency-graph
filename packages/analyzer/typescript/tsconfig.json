@@ -7,7 +7,7 @@
   "include": ["src"],
   "references": [
     {
-      "path": "../../graph-core"
+      "path": "../../core"
     },
     {
       "path": "../core"

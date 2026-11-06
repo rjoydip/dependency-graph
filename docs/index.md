@@ -55,7 +55,7 @@ node apps/api/dist/cli.js            # serve the project in the current director
 node apps/api/dist/index.js          # MCP stdio server
 
 bun run apps/api/src/cli.ts          # same, no build needed (dashboard needs a Vite build)
-bun run apps/mcp-server/src/index.ts
+bun run apps/mcp/src/index.ts
 ```
 
 ## MCP server
@@ -75,7 +75,7 @@ protocol messages; all logs go to stderr.
 }
 ```
 
-Point `args` at `/absolute/path/to/relic/apps/mcp-server/src/index.ts` with `"command": "bun"` if you have not
+Point `args` at `/absolute/path/to/relic/apps/mcp/src/index.ts` with `"command": "bun"` if you have not
 built the bundle.
 
 ### Environment
@@ -271,7 +271,7 @@ runtime evidence never deletes a static edge.
 
 ```sh
 packages/
-  graph-core/             domain types, GraphRepository interface, GraphService (impact analysis)
+  core/                   domain types, GraphRepository interface, GraphService (impact analysis)
   database/               node:sqlite storage behind GraphRepository (recursive-CTE traversal)
   analyzer/
     core/                 shared analyzer contract, discovery, resolver, manifests, owners
@@ -282,7 +282,7 @@ packages/
     go/                   Go analyzer
   indexer/                incremental indexing (hash change detection, importer re-expansion), runtime evidence
 apps/
-  mcp-server/             MCP stdio server: 15 tools, 3 resources, 2 prompts
+  mcp/                    MCP stdio server: 15 tools, 3 resources, 2 prompts
   api/                    Hono API + the publishable package: `relic` CLI and `relic-mcp` bins
   dashboard/              React + React Flow graph explorer
 tests/

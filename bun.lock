@@ -75,7 +75,7 @@
         "tailwindcss": "^4.3.3",
       },
     },
-    "apps/mcp-server": {
+    "apps/mcp": {
       "name": "@relic/mcp-server",
       "version": "0.1.0",
       "dependencies": {
@@ -142,16 +142,16 @@
         "typescript": "^5.9.2",
       },
     },
+    "packages/core": {
+      "name": "@relic/graph-core",
+      "version": "0.1.0",
+    },
     "packages/database": {
       "name": "@relic/database",
       "version": "0.1.0",
       "dependencies": {
         "@relic/graph-core": "workspace:*",
       },
-    },
-    "packages/graph-core": {
-      "name": "@relic/graph-core",
-      "version": "0.1.0",
     },
     "packages/indexer": {
       "name": "@relic/indexer",
@@ -553,11 +553,11 @@
 
     "@relic/docs": ["@relic/docs@workspace:docs"],
 
-    "@relic/graph-core": ["@relic/graph-core@workspace:packages/graph-core"],
+    "@relic/graph-core": ["@relic/graph-core@workspace:packages/core"],
 
     "@relic/indexer": ["@relic/indexer@workspace:packages/indexer"],
 
-    "@relic/mcp-server": ["@relic/mcp-server@workspace:apps/mcp-server"],
+    "@relic/mcp-server": ["@relic/mcp-server@workspace:apps/mcp"],
 
     "@rolldown/binding-android-arm-eabi": ["@rolldown/binding-android-arm-eabi@1.2.13", "", { "os": "android", "cpu": "arm" }, "sha512-Vu/NICrgdRvUOeaJZIyB2FP63s6fO/4ud5l8dXmxDx9yDyn+mN0y+gsvsVviSli+T361Aqo0h46EuMoobrwawA=="],
 

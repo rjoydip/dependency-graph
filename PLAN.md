@@ -1,6 +1,6 @@
 # Relic — Plan
 
-**Status:** 2026-11-06. First release, roadmap items 19.0–19.4, and the polyglot analyzer split are complete.
+**Status:** 2026-11-06. First release, roadmap items 19.0–19.5 are complete.
 
 ## Product
 
@@ -23,7 +23,7 @@ never invented edges.
 
 | Package                        | Responsibility                                                                                |
 | ------------------------------ | --------------------------------------------------------------------------------------------- |
-| `packages/graph-core`          | Domain types, `GraphRepository` contract, `GraphService` (traversal, impact, analytics, risk) |
+| `packages/core`                | Domain types, `GraphRepository` contract, `GraphService` (traversal, impact, analytics, risk) |
 | `packages/database`            | SQLite storage (`node:sqlite`) behind `GraphRepository`, recursive-CTE traversal              |
 | `packages/analyzer/core`       | Shared contract, discovery, resolver, manifests, owners                                       |
 | `packages/analyzer/typescript` | TypeScript/JavaScript analyzer                                                                |
@@ -32,7 +32,7 @@ never invented edges.
 | `packages/analyzer/java`       | Java analyzer                                                                                 |
 | `packages/analyzer/go`         | Go analyzer                                                                                   |
 | `packages/indexer`             | Incremental indexing, change detection, owner metadata, git-diff helpers                      |
-| `apps/mcp-server`              | MCP tools, resources, prompts over stdio                                                      |
+| `apps/mcp`                     | MCP tools, resources, prompts over stdio                                                      |
 | `apps/api`                     | Hono API, publishable `relic` / `relic-mcp` package, CLI, dashboard host                      |
 | `apps/dashboard`               | React + React Flow explorer                                                                   |
 

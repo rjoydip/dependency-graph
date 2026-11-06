@@ -29,7 +29,7 @@ beforeEach(async () => {
   dbDir = tempDir();
   transport = new StdioClientTransport({
     command: "bun",
-    args: ["run", join(PROJECT_ROOT, "apps", "mcp-server", "src", "index.ts")],
+    args: ["run", join(PROJECT_ROOT, "apps", "mcp", "src", "index.ts")],
     cwd: PROJECT_ROOT,
     env: {
       ...process.env,
@@ -96,7 +96,7 @@ describe("MCP protocol over stdio", () => {
       delete env.RELIC_REPOSITORY;
       const rootTransport = new StdioClientTransport({
         command: "bun",
-        args: ["run", join(PROJECT_ROOT, "apps", "mcp-server", "src", "index.ts")],
+        args: ["run", join(PROJECT_ROOT, "apps", "mcp", "src", "index.ts")],
         cwd: PROJECT_ROOT,
         env: env as Record<string, string>,
         stderr: "ignore",

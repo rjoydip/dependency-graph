@@ -2,7 +2,7 @@
   "files": [],
   "references": [
     {
-      "path": "packages/graph-core"
+      "path": "packages/core"
     },
     {
       "path": "packages/analyzer/core"
@@ -29,7 +29,7 @@
       "path": "packages/indexer"
     },
     {
-      "path": "apps/mcp-server"
+      "path": "apps/mcp"
     },
     {
       "path": "apps/api"
