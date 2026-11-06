@@ -1,8 +1,24 @@
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, normalize } from "node:path";
 import type { Diagnostic, GraphNode, NodeType } from "@relic/graph-core";
-import type { RepositoryContext } from "./discovery";
-import { IGNORED_DIRS, SUPPORTED_EXTENSIONS, extOf, isTestFile, sha1 } from "./discovery";
+import type { RepositoryContext } from "@relic/analyzer-core";
+import {
+  IGNORED_DIRS,
+  SUPPORTED_EXTENSIONS,
+  extOf,
+  isTestFile,
+  sha1,
+  type Declaration,
+  type ExtractedFile,
+  type HandlerRef,
+  type ImportBinding,
+  type PendingCall,
+  type PendingFrontend,
+  type PendingHandler,
+  type PendingMessage,
+  type PendingSql,
+  type RefInfo,
+} from "@relic/analyzer-core";
 import {
   apiOperationId,
   databaseTableId,
@@ -13,105 +29,10 @@ import {
   symbolId,
   testNodeId,
   fileId,
-} from "./ids";
+} from "@relic/analyzer-core";
 import * as ts from "typescript";
 
 export const ROUTE_METHODS = new Set(["get", "post", "put", "patch", "delete", "head", "options"]);
-
-export interface Declaration {
-  id: string;
-  simpleName: string;
-  qualifiedName: string;
-  kind: "function" | "class" | "method" | "variable";
-  startLine: number;
-  endLine: number;
-}
-
-export interface ImportBinding {
-  localName: string;
-  /** null = external (npm) module. */
-  targetFile: string | null;
-  exportName: string;
-  /** Raw module specifier, retained for cross-repository resolution. */
-  specifier?: string;
-  /** Target repository when the import crosses an indexed repository boundary. */
-  targetRepositoryId?: string;
-}
-
-export interface PendingCall {
-  sourceId: string;
-  line: number;
-  kind: "identifier" | "property" | "this-property";
-  name?: string;
-  exprName?: string;
-  propName?: string;
-  classQualifiedName?: string;
-}
-
-export interface HandlerRef {
-  kind: "identifier" | "property" | "inline";
-  name?: string;
-  exprName?: string;
-  propName?: string;
-}
-
-export interface PendingHandler {
-  containerId: string;
-  ref: HandlerRef;
-  line: number;
-}
-
-export interface PendingSql {
-  sourceId: string;
-  table: string;
-  mode: "READS" | "WRITES";
-  line: number;
-  excerpt: string;
-}
-
-export interface PendingFrontend {
-  nodeId: string;
-  method: string;
-  path: string;
-  line: number;
-}
-
-/** A publish/subscribe call observed at extraction time. */
-export interface PendingMessage {
-  sourceId: string;
-  queue: string;
-  mode: "PUBLISHES" | "CONSUMES";
-  line: number;
-  excerpt: string;
-}
-
-/** Everything cross-file resolution can target, for the shared ref lookup. */
-export interface RefInfo {
-  id: string;
-  name: string;
-  qualifiedName: string;
-  filePath: string;
-}
-
-export interface ExtractedFile {
-  filePath: string;
-  contentHash: string;
-  nodes: GraphNode[];
-  declarations: Declaration[];
-  refs: RefInfo[];
-  imports: ImportBinding[];
-  calls: PendingCall[];
-  handlers: PendingHandler[];
-  sql: PendingSql[];
-  frontend: PendingFrontend[];
-  messages: PendingMessage[];
-  isTest: boolean;
-  diagnostics: Diagnostic[];
-}
-
-export interface RefLookup {
-  findByName(name: string): RefInfo[];
-}
 
 const SQL_PATTERN = /\b(SELECT|INSERT|UPDATE|DELETE)\b/i;
 const SQL_TABLE_PATTERN = /\b(?:FROM|INTO|UPDATE)\s+[`"]?(\w+)/i;

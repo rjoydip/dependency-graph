@@ -6,7 +6,6 @@ import { GraphService } from "@relic/graph-core";
 import { DatabaseClient, SqliteGraphRepository, type ReplaceGraphInput } from "@relic/database";
 import {
   extractManifest,
-  extractSourceFile,
   fileId,
   loadCodeowners,
   makeRepositoryContext,
@@ -20,6 +19,23 @@ import {
   type RefInfo,
   type RefLookup,
 } from "@relic/analyzer-typescript";
+import { extractFile } from "@relic/analyzer-typescript";
+import { extractPythonFile } from "@relic/analyzer-python";
+import { extractRustFile } from "@relic/analyzer-rust";
+import { extractJavaFile } from "@relic/analyzer-java";
+import { extractGoFile } from "@relic/analyzer-go";
+
+/** Language dispatch: every analyzer emits the shared ExtractedFile contract. */
+function extractSourceFile(
+  repo: Parameters<typeof extractFile>[0],
+  filePath: string,
+): ExtractedFile {
+  if (filePath.endsWith(".py")) return extractPythonFile(repo, filePath);
+  if (filePath.endsWith(".rs")) return extractRustFile(repo, filePath);
+  if (filePath.endsWith(".java")) return extractJavaFile(repo, filePath);
+  if (filePath.endsWith(".go")) return extractGoFile(repo, filePath);
+  return extractFile(repo, filePath);
+}
 
 export interface IndexResult {
   repositoryId: string;

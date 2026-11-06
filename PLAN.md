@@ -1,13 +1,13 @@
 # Relic — Plan
 
-**Status:** 2026-11-06. First release and roadmap items 19.0–19.4 are complete.
+**Status:** 2026-11-06. First release, roadmap items 19.0–19.4, and the polyglot analyzer split are complete.
 
 ## Product
 
-Relic is a static dependency-graph engine for TypeScript/JavaScript and Python
-repositories, plus the service/deployment manifests around them. It indexes
-symbols, files, routes, tests, SQL tables, queues, services, deployments, and
-their relationships, then exposes the same graph through:
+Relic is a static dependency-graph engine for TypeScript/JavaScript, Python,
+Rust, Java and Go repositories, plus the service/deployment manifests around
+them. It indexes symbols, files, routes, tests, SQL tables, queues, services,
+deployments, and their relationships, then exposes the same graph through:
 
 - an MCP stdio server for coding agents,
 - a local Hono HTTP API,
@@ -25,7 +25,12 @@ never invented edges.
 | ------------------------------ | --------------------------------------------------------------------------------------------- |
 | `packages/graph-core`          | Domain types, `GraphRepository` contract, `GraphService` (traversal, impact, analytics, risk) |
 | `packages/database`            | SQLite storage (`node:sqlite`) behind `GraphRepository`, recursive-CTE traversal              |
-| `packages/analyzer-typescript` | TypeScript + Python analyzers: extract declarations/imports/calls, then resolve relationships |
+| `packages/analyzer-core`       | Shared contract, discovery, resolver, manifests, owners                                       |
+| `packages/analyzer-typescript` | TypeScript/JavaScript analyzer                                                                |
+| `packages/analyzer-python`     | Python analyzer                                                                               |
+| `packages/analyzer-rust`       | Rust analyzer                                                                                 |
+| `packages/analyzer-java`       | Java analyzer                                                                                 |
+| `packages/analyzer-go`         | Go analyzer                                                                                   |
 | `packages/indexer`             | Incremental indexing, change detection, owner metadata, git-diff helpers                      |
 | `apps/mcp-server`              | MCP tools, resources, prompts over stdio                                                      |
 | `apps/api`                     | Hono API, publishable `relic` / `relic-mcp` package, CLI, dashboard host                      |
@@ -56,7 +61,7 @@ bun run test:e2e
 
 ## Definition of done (first release)
 
-- [x] Indexes TypeScript repositories incrementally (delete/rename handled as remove + add).
+- [x] Indexes TypeScript/JavaScript, Python, Rust, Java and Go repositories incrementally (delete/rename handled as remove + add).
 - [x] Resolves relative imports, tsconfig `paths`/`baseUrl` aliases, and workspace packages.
 - [x] Resolves statically identifiable calls, routes, GraphQL/WebSocket operations, SQL, and tests.
 - [x] Stores nodes/edges through `GraphRepository` with evidence and confidence.
@@ -115,6 +120,14 @@ re-index.
 - **Semantic search**: deterministic local lexical BM25 ranking
   (`search_semantic`, `GET /api/search`) with keyword fallback when no index or
   no ranked hits exist.
+
+### 19.5 — Polyglot analyzer packages
+
+- `analyzer-core` owns discovery, the extracted-file contract, resolution, manifests and owners.
+- One package per language: `analyzer-typescript`, `analyzer-python`, `analyzer-rust`,
+  `analyzer-java`, `analyzer-go`; the indexer dispatches by extension.
+- Rust/Java/Go share a regex-driven brace-language engine for symbols, imports,
+  calls, SQL, queues, tests, and actix/axum, Spring, Gin and net/http routes.
 
 ## Sequencing
 

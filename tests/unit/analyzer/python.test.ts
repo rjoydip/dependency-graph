@@ -1,13 +1,13 @@
 import { join } from "node:path";
 import { describe, expect, it } from "bun:test";
 import {
-  extractPythonFile,
   makeRepositoryContext,
   relate,
   walkRepository,
   type RefInfo,
   type RefLookup,
-} from "@relic/analyzer-typescript";
+} from "@relic/analyzer-core";
+import { extractPythonFile } from "@relic/analyzer-python";
 import { FIXTURE_ROOT } from "../../helpers";
 
 const root = join(FIXTURE_ROOT, "..", "python-service");

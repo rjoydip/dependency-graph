@@ -1,8 +1,8 @@
 # Relic
 
-Static dependency-graph engine for TypeScript/JavaScript and Python repositories. Relic parses your source,
-reads service/deployment manifests, stores the result in a local SQLite database, and exposes it three ways:
-an MCP server for coding agents, a CLI + HTTP API, and a React Flow dashboard.
+Static dependency-graph engine for TypeScript/JavaScript, Python, Rust, Java and Go repositories. Relic parses
+your source, reads service/deployment manifests, stores the result in a local SQLite database, and exposes it
+three ways: an MCP server for coding agents, a CLI + HTTP API, and a React Flow dashboard.
 
 Everything runs locally. No account, no hosted service, no source code leaves the machine — the only network
 access is an optional `git clone` when you ask it to index a GitHub URL.
@@ -19,11 +19,13 @@ Calls that cannot be resolved become diagnostics; they never become invented edg
   headless variant for scripts and CI; `relic diff a.json b.json --check` fails on snapshot drift.
 - **Dashboard** — React + React Flow explorer with node search, neighbourhood expansion, code peek,
   impact analysis (risk score, coupling, owners) and cycle highlighting.
-- **Library** — `graph-core` (domain + traversal + impact), `database` (SQLite repository), `analyzer-typescript`
-  (TypeScript + Python analyzers), `indexer` (incremental orchestration, manifests, runtime evidence).
+- **Library** — `graph-core` (domain + traversal + impact), `database` (SQLite repository), `analyzer-core`
+  (shared contract + resolver), per-language analyzers (`analyzer-typescript`, `analyzer-python`,
+  `analyzer-rust`, `analyzer-java`, `analyzer-go`), `indexer` (incremental orchestration, manifests,
+  runtime evidence).
 
-Relic supports TypeScript/JavaScript and Python today. The analyzer never executes indexed code — it only
-reads it.
+Relic supports TypeScript/JavaScript, Python, Rust, Java and Go today. The analyzer never executes indexed
+code — it only reads it.
 
 ## Requirements
 
@@ -228,7 +230,7 @@ runtime evidence never deletes a static edge.
 
 ## Indexing semantics
 
-- **Files:** `.ts .tsx .mts .cts .js .jsx .mjs .cjs .py`, plus `Dockerfile*`, `*.dockerfile`,
+- **Files:** `.ts .tsx .mts .cts .js .jsx .mjs .cjs .py .rs .java .go`, plus `Dockerfile*`, `*.dockerfile`,
   `docker-compose*.yml/yaml`, and any YAML containing `apiVersion` + `kind`. Hidden entries and
   `node_modules`, `.git`, `dist`, `build`, `coverage`, `.next`, `.turbo`, `out`, `.data` are skipped.
 - **Incremental:** files are compared by content hash. Changed files, deleted files, and the _importers_ of
@@ -239,10 +241,13 @@ runtime evidence never deletes a static edge.
 - **Extraction:** functions, classes, methods and variables become `symbol` nodes; route handlers
   (`get/post/put/patch/delete/head/options` with a `/`-prefixed path) become `route` nodes; `on` handlers
   become `api_operation`; SQL strings produce `READS`/`WRITES` edges to `database_table` nodes; test files
-  (`.test`/`.spec`, `test_*.py`/`*_test.py`, or anything under `tests/`, `__tests__/`) become `test` nodes
-  with `TESTS` edges.
+  (`.test`/`.spec`, `test_*.py`/`*_test.py`, `*_test.go`, `*Test.java`, Rust `tests/`, or anything under
+  `tests/`, `__tests__/`) become `test` nodes with `TESTS` edges.
 - **Python:** module/class/function symbols, `from`/`import` bindings, statically named calls, Flask/FastAPI/
   Django routes, SQL strings, tests, and broker publish/subscribe calls follow the same contract as TypeScript.
+- **Rust, Java, Go:** module imports (`use crate::…`, `import a.b.C;`, `import "pkg"`), type/class/struct
+  containers, methods, calls, SQL, queues, tests, and common framework routes (actix/axum, Spring, Gin/net/http).
+  The per-language packages live under `packages/analyzer-*`; `analyzer-core` owns the shared contract.
 - **Queues and manifests:** publish/subscribe calls create `queue` nodes with `PUBLISHES`/`CONSUMES` edges;
   compose services, Dockerfiles, and Kubernetes workloads create `service`/`deployment` nodes and
   `DEPENDS_ON` edges.
@@ -268,7 +273,12 @@ runtime evidence never deletes a static edge.
 packages/
   graph-core/             domain types, GraphRepository interface, GraphService (impact analysis)
   database/               node:sqlite storage behind GraphRepository (recursive-CTE traversal)
-  analyzer-typescript/    TypeScript + Python analyzers, manifest extraction (2 passes: extract, resolve)
+  analyzer-core/          shared analyzer contract, discovery, resolver, manifests, owners
+  analyzer-typescript/    TypeScript/JavaScript analyzer
+  analyzer-python/        Python analyzer
+  analyzer-rust/          Rust analyzer
+  analyzer-java/          Java analyzer
+  analyzer-go/            Go analyzer
   indexer/                incremental indexing (hash change detection, importer re-expansion), runtime evidence
 apps/
   mcp-server/             MCP stdio server: 15 tools, 3 resources, 2 prompts

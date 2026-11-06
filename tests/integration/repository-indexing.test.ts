@@ -240,4 +240,32 @@ describe("incremental indexing", () => {
     expect(route).toBeDefined();
     expect(graph.graph.searchSymbols(pythonRepoId, "", "test").length).toBeGreaterThan(0);
   });
+
+  it("indexes Go, Java and Rust services through the language dispatcher", () => {
+    const root = join(FIXTURE_ROOT, "..", "polyglot");
+    const polyRepoId = repositoryIdFor(root);
+    const result = graph.indexer.index(root);
+
+    expect(result.repositoryId).toBe(polyRepoId);
+    expect(result.totalFiles).toBeGreaterThanOrEqual(10);
+    const diagnostics = graph.graph.getSummary(polyRepoId).diagnostics;
+    expect(diagnostics.some((d) => d.kind === "parse-error")).toBe(false);
+
+    for (const symbol of ["Repo.Update", "UserController.getUser", "Repo.update", "health"]) {
+      expect(graph.graph.searchSymbols(polyRepoId, symbol).length).toBeGreaterThan(0);
+    }
+    const routes = graph.graph.searchSymbols(polyRepoId, "", "route").map((n) => n.qualifiedName);
+    expect(routes).toEqual(
+      expect.arrayContaining([
+        "GET /users/:id",
+        "GET /users/{id}",
+        "POST /users",
+        "GET /health",
+        "GET /items",
+      ]),
+    );
+    expect(graph.graph.searchSymbols(polyRepoId, "", "test").length).toBeGreaterThanOrEqual(3);
+    const calls = graph.repository.getEdges({ repositoryId: polyRepoId, edgeTypes: ["CALLS"] });
+    expect(calls.length).toBeGreaterThan(0);
+  });
 });

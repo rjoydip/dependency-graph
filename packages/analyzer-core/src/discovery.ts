@@ -14,6 +14,9 @@ export const SUPPORTED_EXTENSIONS = new Set([
   ".mjs",
   ".cjs",
   ".py",
+  ".rs",
+  ".java",
+  ".go",
 ]);
 
 export const IGNORED_DIRS = new Set([
@@ -214,6 +217,13 @@ export function isTestFile(filePath: string): boolean {
       filePath.endsWith("_test.py") ||
       /(^|\/)(tests?|__tests__)\//.test(filePath)
     );
+  }
+  if (filePath.endsWith(".java")) {
+    return /(^|\/)src\/test\//.test(filePath) || /(Test|Tests)\.java$/.test(filePath);
+  }
+  if (filePath.endsWith(".go")) return filePath.endsWith("_test.go");
+  if (filePath.endsWith(".rs")) {
+    return /(^|\/)tests\//.test(filePath) || filePath.endsWith("_test.rs");
   }
   return (
     /\.(test|spec)\.[cm]?[jt]sx?$/.test(filePath) || /(^|\/)(tests?|__tests__)\//.test(filePath)

@@ -4,7 +4,7 @@
 
 # Relic
 
-Static dependency-graph engine for TypeScript/JavaScript and Python repositories, exposed three ways: an MCP server (for coding agents), a Hono HTTP API, and a React Flow dashboard. It also ingests docker-compose, Dockerfile and Kubernetes manifests and runtime coverage evidence.
+Static dependency-graph engine for TypeScript/JavaScript, Python, Rust, Java and Go repositories, exposed three ways: an MCP server (for coding agents), a Hono HTTP API, and a React Flow dashboard. It also ingests docker-compose, Dockerfile and Kubernetes manifests and runtime coverage evidence.
 
 The core promise: when you ask "what breaks if I change `UserService.updateUser`?", you get an evidence-backed answer — every edge carries a source file, line, confidence (`static` 1.0 vs `inferred` 0.6), and a note explaining how it was resolved. Unresolved calls become diagnostics; they never become invented edges.
 
@@ -14,7 +14,12 @@ The core promise: when you ask "what breaks if I change `UserService.updateUser`
 packages/
   graph-core/             domain types, GraphRepository interface, GraphService (impact analysis)
   database/               node:sqlite storage behind GraphRepository (recursive-CTE traversal)
-  analyzer-typescript/    TypeScript + Python analyzers, manifest extraction (2 passes: extract, resolve)
+  analyzer-core/          shared analyzer contract, discovery, resolver, manifests
+  analyzer-typescript/    TypeScript/JavaScript analyzer
+  analyzer-python/        Python analyzer
+  analyzer-rust/          Rust analyzer
+  analyzer-java/          Java analyzer
+  analyzer-go/            Go analyzer
   indexer/                incremental indexing (hash change detection, importer re-expansion), runtime evidence
 apps/
   mcp-server/             MCP stdio server: 15 tools, 3 resources, 2 prompts
