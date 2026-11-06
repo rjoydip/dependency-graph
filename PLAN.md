@@ -1,18 +1,18 @@
 # Relic — Plan
 
-**Status:** 2026-11-05. First release and roadmap items 19.0–19.3 are complete.
-Remaining work is the 19.4 "bigger bets" list at the end of this document.
+**Status:** 2026-11-06. First release and roadmap items 19.0–19.4 are complete.
 
 ## Product
 
-Relic is a static dependency-graph engine for TypeScript/JavaScript repositories.
-It indexes symbols, files, routes, tests, SQL tables, and their relationships, then
-exposes the same graph through:
+Relic is a static dependency-graph engine for TypeScript/JavaScript and Python
+repositories, plus the service/deployment manifests around them. It indexes
+symbols, files, routes, tests, SQL tables, queues, services, deployments, and
+their relationships, then exposes the same graph through:
 
 - an MCP stdio server for coding agents,
 - a local Hono HTTP API,
 - a React Flow dashboard,
-- a `relic` CLI for indexing, CI, export, and PR reports.
+- a `relic` CLI for indexing, CI, export, runtime evidence, and PR reports.
 
 The promise is evidence, not guesses: every edge carries a source `file:line`,
 a confidence (`static` 1.0 / `runtime` 0.9 / `inferred` 0.6), and a note when the
@@ -25,7 +25,7 @@ never invented edges.
 | ------------------------------ | --------------------------------------------------------------------------------------------- |
 | `packages/graph-core`          | Domain types, `GraphRepository` contract, `GraphService` (traversal, impact, analytics, risk) |
 | `packages/database`            | SQLite storage (`node:sqlite`) behind `GraphRepository`, recursive-CTE traversal              |
-| `packages/analyzer-typescript` | Two-pass TypeScript analyzer: extract declarations/imports/calls, then resolve relationships  |
+| `packages/analyzer-typescript` | TypeScript + Python analyzers: extract declarations/imports/calls, then resolve relationships |
 | `packages/indexer`             | Incremental indexing, change detection, owner metadata, git-diff helpers                      |
 | `apps/mcp-server`              | MCP tools, resources, prompts over stdio                                                      |
 | `apps/api`                     | Hono API, publishable `relic` / `relic-mcp` package, CLI, dashboard host                      |
@@ -34,7 +34,7 @@ never invented edges.
 **Data flow:** walk repository → extract per file → resolve cross-file edges →
 persist transactionally → query through `GraphService` → MCP / HTTP / CLI / dashboard.
 
-**Invariants**
+### Invariants
 
 - Node identity derives from repository + path + qualified name, not line numbers.
 - Edges are only emitted when a target resolves; unresolved targets are diagnostics.
@@ -97,21 +97,29 @@ boundary rules; `relic impact`; `relic export` (Mermaid/DOT); `relic init`
 composite action for PR comments. Branch switches still require an explicit
 re-index.
 
-## Next: 19.4 bigger bets
+### 19.4 — Bigger bets
 
-| Feature                            | Acceptance                                                                                                                           |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Second language analyzer           | A Python analyzer behind the same contract; fixture parity on symbols, calls, tests, and routes; no graph-core changes.              |
-| Queue / service / deployment nodes | Publish/subscribe calls, service manifests, and Docker/K8s references become nodes and edges with evidence.                          |
-| Runtime evidence                   | lcov or OpenTelemetry ingest upgrades `TESTS`/`CALLS` edges to `runtime`; conflicts with static edges are reported, not overwritten. |
-| Cross-repo / monorepo graph        | Workspace sibling imports link to nodes in another indexed repository; impact traverses the boundary.                                |
-| Semantic search                    | Natural-language query returns ranked symbols with evidence; falls back to keyword search without an index.                          |
+- **Python analyzer** behind the shared `extractSourceFile` contract: symbols,
+  class-qualified names, imports, calls, Flask/FastAPI/Django routes, SQL, tests,
+  and pub/sub calls. Covered by a fixture and indexed end-to-end.
+- **Queue / service / deployment nodes** from pub/sub calls plus docker-compose,
+  Dockerfile, and Kubernetes manifests, linked with `PUBLISHES`/`CONSUMES` and
+  `DEPENDS_ON` edges.
+- **Runtime evidence** ingest from lcov or OTLP JSON. `CALLS`/`TESTS` edges are
+  upgraded to `runtime` confidence; static conflicts become `runtime-conflict`
+  diagnostics and are never overwritten. Available through the API, MCP, and
+  `relic runtime`.
+- **Cross-repo / monorepo graph**: workspace sibling imports resolve to nodes in
+  another indexed repository, and the database validates edges against all known
+  nodes so impact traverses repository boundaries.
+- **Semantic search**: deterministic local lexical BM25 ranking
+  (`search_semantic`, `GET /api/search`) with keyword fallback when no index or
+  no ranked hits exist.
 
 ## Sequencing
 
-1. Ship 19.0–19.3 (done).
-2. Add 19.4 capabilities only when a real repository or language demands them.
-3. Keep the quality gates and evidence model intact as analyzers and sources grow.
+1. Add new capabilities only when a real repository or language demands them.
+2. Keep the quality gates and evidence model intact as analyzers and sources grow.
 
 ## Non-goals and constraints
 

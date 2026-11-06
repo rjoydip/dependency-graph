@@ -12,6 +12,8 @@ import type {
   NodeType,
   RepositoryMeta,
   RiskAssessment,
+  SearchHit,
+  SearchReport,
   TraversalStep,
 } from "./domain";
 import { GraphError } from "./errors";
@@ -58,6 +60,8 @@ const IMPACT_EDGE_TYPES: EdgeType[] = [
 ];
 
 export class GraphService {
+  private readonly searchIndexes = new Map<string, SearchIndex>();
+
   constructor(private readonly repo: GraphRepository) {}
 
   searchSymbols(repositoryId: string, query: string, type?: NodeType): GraphNode[] {
@@ -65,6 +69,108 @@ export class GraphService {
     const filter: NodeFilter = { repositoryId, query };
     if (type) filter.type = type;
     return this.repo.listNodes({ ...filter, limit: DEFAULT_PAGE });
+  }
+
+  /**
+   * Rank nodes for a natural-language query with local lexical BM25. No model,
+   * no network: deterministic, and keyword search when the index is unavailable.
+   */
+  semanticSearch(
+    repositoryId: string,
+    query: string,
+    options: { limit?: number } = {},
+  ): SearchReport {
+    const meta = this.requireRepository(repositoryId);
+    const limit = clamp(options.limit ?? 10, 1, MAX_PAGE);
+    const queryTokens = tokenize(query);
+    if (queryTokens.length === 0) return this.keywordSearch(repositoryId, query, limit);
+
+    const index = this.searchIndex(repositoryId, meta);
+    if (!index) return this.keywordSearch(repositoryId, query, limit);
+
+    const querySet = new Set(queryTokens);
+    const phrase = query.trim().toLowerCase();
+    const hits: SearchHit[] = [];
+    for (const doc of index.docs) {
+      let score = 0;
+      for (const token of querySet) {
+        const tf = doc.counts.get(token) ?? 0;
+        if (tf === 0) continue;
+        const df = index.documentFrequency.get(token) ?? 0;
+        const idf = Math.log(1 + (index.docs.length - df + 0.5) / (df + 0.5));
+        score +=
+          idf * ((tf * 2.2) / (tf + 1.2 * (0.25 + 0.75 * (doc.length / index.averageLength))));
+      }
+      if (score === 0) continue;
+      const text = `${doc.node.name} ${doc.node.qualifiedName ?? ""}`.toLowerCase();
+      if (phrase.length > 2 && text.includes(phrase)) score += 4;
+      score *= nodeTypeWeight(doc.node.type);
+      hits.push({
+        node: doc.node,
+        score: Math.round(score * 1000) / 1000,
+        evidence: {
+          source: "static",
+          ...(doc.node.filePath ? { file: doc.node.filePath } : {}),
+          ...(doc.node.startLine != null ? { line: doc.node.startLine } : {}),
+          note: `matched ${[...querySet].filter((token) => doc.counts.has(token)).join(", ")}`,
+        },
+      });
+    }
+    hits.sort((a, b) => b.score - a.score || a.node.name.localeCompare(b.node.name));
+    if (hits.length === 0) return this.keywordSearch(repositoryId, query, limit);
+    return { mode: "ranked", hits: hits.slice(0, limit) };
+  }
+
+  private keywordSearch(repositoryId: string, query: string, limit: number): SearchReport {
+    const nodes = this.repo.listNodes({ repositoryId, query, limit });
+    return {
+      mode: "keyword",
+      hits: nodes.map((node) => ({
+        node,
+        score: 0,
+        evidence: {
+          source: "static",
+          ...(node.filePath ? { file: node.filePath } : {}),
+          ...(node.startLine != null ? { line: node.startLine } : {}),
+          note: "keyword fallback",
+        },
+      })),
+    };
+  }
+
+  private searchIndex(repositoryId: string, meta: RepositoryMeta): SearchIndex | null {
+    const fingerprint = `${meta.indexedAt ?? ""}:${meta.fileCount}:${meta.nodeCount}`;
+    const cached = this.searchIndexes.get(repositoryId);
+    if (cached?.fingerprint === fingerprint) return cached;
+    const nodes = this.repo.listNodes({ repositoryId, limit: SCAN_LIMIT });
+    if (nodes.length === 0) {
+      this.searchIndexes.delete(repositoryId);
+      return null;
+    }
+    const docs: SearchDocument[] = nodes.map((node) => {
+      const tokens = [
+        ...tokenize(node.name),
+        ...tokenize(node.name),
+        ...tokenize(node.name),
+        ...tokenize(node.qualifiedName ?? ""),
+        ...tokenize(node.qualifiedName ?? ""),
+        ...tokenize(node.filePath ?? ""),
+        ...tokenize(safeMetadata(node.metadata)),
+      ];
+      const counts = new Map<string, number>();
+      for (const token of tokens) counts.set(token, (counts.get(token) ?? 0) + 1);
+      return { node, counts, length: Math.max(tokens.length, 1) };
+    });
+    const documentFrequency = new Map<string, number>();
+    for (const doc of docs) {
+      for (const token of doc.counts.keys()) {
+        documentFrequency.set(token, (documentFrequency.get(token) ?? 0) + 1);
+      }
+    }
+    const averageLength = docs.reduce((sum, doc) => sum + doc.length, 0) / docs.length;
+    const index: SearchIndex = { fingerprint, docs, documentFrequency, averageLength };
+    this.searchIndexes.set(repositoryId, index);
+    return index;
   }
 
   getSymbolDetails(
@@ -534,4 +640,77 @@ function isEntrypointPath(filePath: string | null | undefined): boolean {
   if (ENTRYPOINT_BASENAMES.has(base)) return true;
   if (/(^|\/)(pages|app|routes)\//.test(filePath)) return true;
   return /\.config\.[^.]+$/.test(filePath);
+}
+
+interface SearchDocument {
+  node: GraphNode;
+  counts: Map<string, number>;
+  length: number;
+}
+
+interface SearchIndex {
+  fingerprint: string;
+  docs: SearchDocument[];
+  documentFrequency: Map<string, number>;
+  averageLength: number;
+}
+
+const SEARCH_STOPWORDS = new Set([
+  "a",
+  "an",
+  "and",
+  "are",
+  "as",
+  "at",
+  "be",
+  "by",
+  "do",
+  "does",
+  "for",
+  "from",
+  "how",
+  "in",
+  "is",
+  "it",
+  "of",
+  "on",
+  "or",
+  "that",
+  "the",
+  "this",
+  "to",
+  "was",
+  "what",
+  "when",
+  "where",
+  "which",
+  "who",
+  "why",
+  "with",
+]);
+
+function tokenize(value: string): string[] {
+  return value
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2")
+    .split(/[^A-Za-z0-9_]+/)
+    .flatMap((part) => part.split("_"))
+    .map((part) => part.toLowerCase())
+    .filter((part) => part.length > 1 && !SEARCH_STOPWORDS.has(part));
+}
+
+function nodeTypeWeight(type: NodeType): number {
+  if (type === "symbol") return 1.2;
+  if (type === "route" || type === "api_operation") return 1.1;
+  if (type === "queue" || type === "service" || type === "deployment") return 1.05;
+  if (type === "test") return 0.9;
+  return 1;
+}
+
+function safeMetadata(metadata: Record<string, unknown>): string {
+  try {
+    return JSON.stringify(metadata);
+  } catch {
+    return "";
+  }
 }

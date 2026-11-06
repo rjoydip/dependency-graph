@@ -13,6 +13,7 @@ export const SUPPORTED_EXTENSIONS = new Set([
   ".jsx",
   ".mjs",
   ".cjs",
+  ".py",
 ]);
 
 export const IGNORED_DIRS = new Set([
@@ -207,6 +208,13 @@ export function readFileHash(absolutePath: string): string {
 }
 
 export function isTestFile(filePath: string): boolean {
+  if (filePath.endsWith(".py")) {
+    return (
+      /(^|\/)test_[^/]+\.py$/.test(filePath) ||
+      filePath.endsWith("_test.py") ||
+      /(^|\/)(tests?|__tests__)\//.test(filePath)
+    );
+  }
   return (
     /\.(test|spec)\.[cm]?[jt]sx?$/.test(filePath) || /(^|\/)(tests?|__tests__)\//.test(filePath)
   );

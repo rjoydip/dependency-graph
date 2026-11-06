@@ -64,6 +64,8 @@ describe("MCP protocol over stdio", () => {
       "get_owners",
       "get_symbol_details",
       "index_repository",
+      "ingest_runtime",
+      "search_semantic",
       "search_symbols",
     ]);
     // Input schemas are documented and typed.

@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import type { GraphNode } from "@relic/graph-core";
 import { openGraph, repositoryIdFor, type OpenGraph } from "@relic/indexer";
-import { copyFixture, cleanup, tempDir } from "../helpers";
+import { copyFixture, cleanup, tempDir, FIXTURE_ROOT } from "../helpers";
 
 let fixture: { root: string; cleanup: () => void };
 let dbDir: string;
@@ -223,5 +223,21 @@ describe("incremental indexing", () => {
       .find((n) => n.qualifiedName === "UserService.updateUser")!;
     const deps = graph.graph.findDependencies(repoId, target.id, 2);
     expect(deps.map((s) => s.node.qualifiedName)).not.toContain("UserRepository.update");
+  });
+
+  it("indexes Python services end-to-end with routes, calls and tests", () => {
+    const root = join(FIXTURE_ROOT, "..", "python-service");
+    const pythonRepoId = repositoryIdFor(root);
+    const result = graph.indexer.index(root);
+
+    expect(result.repositoryId).toBe(pythonRepoId);
+    expect(result.totalFiles).toBeGreaterThanOrEqual(6);
+    const diagnostics = graph.graph.getSummary(pythonRepoId).diagnostics;
+    expect(diagnostics.some((d) => d.kind === "parse-error")).toBe(false);
+
+    expect(graph.graph.searchSymbols(pythonRepoId, "UserService.update_user").length).toBe(1);
+    const route = graph.graph.searchSymbols(pythonRepoId, "GET /users/{user_id}", "route")[0];
+    expect(route).toBeDefined();
+    expect(graph.graph.searchSymbols(pythonRepoId, "", "test").length).toBeGreaterThan(0);
   });
 });

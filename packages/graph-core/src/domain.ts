@@ -71,7 +71,7 @@ export const CONFIDENCE: Record<ConfidenceTier, number> = {
 };
 
 export interface Diagnostic {
-  kind: "unresolved" | "parse-error" | "skipped";
+  kind: "unresolved" | "parse-error" | "skipped" | "runtime-conflict";
   message: string;
   file?: string;
   line?: number;
@@ -177,4 +177,17 @@ export interface CycleReport {
 export interface DeadCodeEntry {
   node: GraphNode;
   fanIn: number;
+}
+
+/** Ranked natural-language result with the evidence that justified the score. */
+export interface SearchHit {
+  node: GraphNode;
+  score: number;
+  evidence: Evidence;
+}
+
+export interface SearchReport {
+  /** "ranked" when the local index was available; "keyword" is the fallback. */
+  mode: "ranked" | "keyword";
+  hits: SearchHit[];
 }

@@ -7,6 +7,7 @@ import {
   apiOperationId,
   databaseTableId,
   frontendOperationId,
+  queueId,
   repositoryNodeId,
   routeId,
   symbolId,
@@ -31,6 +32,10 @@ export interface ImportBinding {
   /** null = external (npm) module. */
   targetFile: string | null;
   exportName: string;
+  /** Raw module specifier, retained for cross-repository resolution. */
+  specifier?: string;
+  /** Target repository when the import crosses an indexed repository boundary. */
+  targetRepositoryId?: string;
 }
 
 export interface PendingCall {
@@ -71,6 +76,15 @@ export interface PendingFrontend {
   line: number;
 }
 
+/** A publish/subscribe call observed at extraction time. */
+export interface PendingMessage {
+  sourceId: string;
+  queue: string;
+  mode: "PUBLISHES" | "CONSUMES";
+  line: number;
+  excerpt: string;
+}
+
 /** Everything cross-file resolution can target, for the shared ref lookup. */
 export interface RefInfo {
   id: string;
@@ -90,6 +104,7 @@ export interface ExtractedFile {
   handlers: PendingHandler[];
   sql: PendingSql[];
   frontend: PendingFrontend[];
+  messages: PendingMessage[];
   isTest: boolean;
   diagnostics: Diagnostic[];
 }
@@ -103,6 +118,27 @@ const SQL_TABLE_PATTERN = /\b(?:FROM|INTO|UPDATE)\s+[`"]?(\w+)/i;
 const MUTATION_KEYS = new Set(["Mutation", "Query", "Subscription"]);
 
 const HTTP_METHODS = new Set(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]);
+const PUBLISH_METHODS = new Set([
+  "publish",
+  "send",
+  "sendMessage",
+  "produce",
+  "emit",
+  "enqueue",
+  "push",
+]);
+const CONSUME_METHODS = new Set(["subscribe", "consume", "receive", "dequeue", "listen"]);
+const QUEUE_KEYS = new Set([
+  "topic",
+  "queue",
+  "queueName",
+  "QueueUrl",
+  "queueUrl",
+  "channel",
+  "subject",
+  "stream",
+  "routingKey",
+]);
 const NEST_DECORATORS = new Set([
   "Get",
   "Post",
@@ -257,6 +293,7 @@ export function extractFile(
   const containers: Array<{ id: string; start: number; end: number }> = [];
   const rawCalls: Array<{ node: ts.Node; info: Omit<PendingCall, "sourceId"> }> = [];
   const rawSql: Array<{ node: ts.Node; info: Omit<PendingSql, "sourceId"> }> = [];
+  const rawMessages: Array<{ node: ts.Node; info: Omit<PendingMessage, "sourceId"> }> = [];
   const handlers: PendingHandler[] = [];
   const frontend: PendingFrontend[] = [];
   let currentClass: string | null = null;
@@ -426,7 +463,12 @@ export function extractFile(
       const targetFile = resolved.kind === "ok" ? resolved.path : null;
       const clause = node.importClause;
       if (clause?.name)
-        imports.push({ localName: clause.name.text, targetFile, exportName: clause.name.text });
+        imports.push({
+          localName: clause.name.text,
+          targetFile,
+          exportName: clause.name.text,
+          specifier,
+        });
       if (clause?.namedBindings && ts.isNamedImports(clause.namedBindings)) {
         for (const el of clause.namedBindings.elements) {
           if (el.isTypeOnly) continue;
@@ -434,6 +476,7 @@ export function extractFile(
             localName: (el.propertyName ?? el.name).text,
             targetFile,
             exportName: el.name.text,
+            specifier,
           });
         }
       }
@@ -615,6 +658,38 @@ export function extractFile(
       const callee = node.expression;
       const arg0 = stringArg(node.arguments[0]);
 
+      if (ts.isPropertyAccessExpression(callee)) {
+        const method = callee.name.text;
+        const mode = PUBLISH_METHODS.has(method)
+          ? "PUBLISHES"
+          : CONSUME_METHODS.has(method)
+            ? "CONSUMES"
+            : null;
+        const strict =
+          method === "send" ||
+          method === "sendMessage" ||
+          method === "enqueue" ||
+          method === "push";
+        const queue = mode ? queueTargetFromCall(node.arguments, strict) : null;
+        if (mode && queue) {
+          const id = queueId(repo.id, queue);
+          if (!nodes.some((n) => n.id === id)) {
+            nodes.push(
+              makeNode(id, "queue", queue, {
+                qualifiedName: queue,
+                nodeFilePath: null,
+                metadata: { kind: "queue" },
+              }),
+            );
+            refs.push({ id, name: queue, qualifiedName: queue, filePath });
+          }
+          rawMessages.push({
+            node,
+            info: { queue, mode, line, excerpt: node.getText(sf).slice(0, 120) },
+          });
+        }
+      }
+
       // tRPC: router({ getUser: publicProcedure.query(resolver) }) or t.router(...).
       const isRouterCall =
         (ts.isIdentifier(callee) && callee.text === "router") ||
@@ -758,6 +833,11 @@ export function extractFile(
     const sourceId = findSourceId(raw.node.getStart());
     if (sourceId) sql.push({ sourceId, ...raw.info });
   }
+  const messages: PendingMessage[] = [];
+  for (const raw of rawMessages) {
+    const sourceId = findSourceId(raw.node.getStart());
+    if (sourceId) messages.push({ sourceId, ...raw.info });
+  }
 
   return {
     filePath,
@@ -770,6 +850,7 @@ export function extractFile(
     handlers,
     sql,
     frontend,
+    messages,
     isTest,
     diagnostics,
   };
@@ -795,6 +876,7 @@ function emptyResult(
     handlers: [],
     sql: [],
     frontend: [],
+    messages: [],
     isTest: false,
     diagnostics,
   };
@@ -959,4 +1041,30 @@ function extractEndpointMapping(node: ts.Expression): { method: string; path: st
 function stringArgValue(node: ts.Expression): string | null {
   if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) return node.text;
   return null;
+}
+
+/** Queue/topic name from `publish("x")`, `send({ topic: "x" })`, `sendMessage({ QueueUrl })`. */
+function queueTargetFromCall(args: readonly ts.Expression[], strict = false): string | null {
+  if (!strict) {
+    const first = args[0] ? stringArgValue(args[0]) : null;
+    if (first) return sanitizeQueueName(first);
+  }
+  const obj = args.find((arg): arg is ts.ObjectLiteralExpression =>
+    ts.isObjectLiteralExpression(arg),
+  );
+  if (!obj) return null;
+  for (const prop of obj.properties) {
+    if (!ts.isPropertyAssignment(prop)) continue;
+    const key = prop.name.getText().replace(/^["']|["']$/g, "");
+    if (!QUEUE_KEYS.has(key)) continue;
+    const value = stringArgValue(prop.initializer);
+    if (value) return sanitizeQueueName(value);
+  }
+  return null;
+}
+
+function sanitizeQueueName(value: string): string {
+  if (!/^https?:\/\//i.test(value)) return value;
+  const segment = value.replace(/\/+$/, "").split("/").pop();
+  return segment || value;
 }

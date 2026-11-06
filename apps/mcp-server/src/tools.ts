@@ -2,6 +2,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { GraphNode, GraphService, Indexer, SqliteGraphRepository } from "./deps";
 import { GraphError } from "@relic/graph-core";
 import { blameRange, loadCodeowners, ownersFor } from "@relic/analyzer-typescript";
+import { ingestRuntime } from "@relic/indexer";
 import {
   changedRanges,
   coerceNodeType,
@@ -110,6 +111,25 @@ export function registerTools(server: McpServer, deps: ToolDeps): void {
   );
 
   server.registerTool(
+    "ingest_runtime",
+    {
+      description:
+        "Upgrade CALLS/TESTS evidence from lcov or OpenTelemetry observations. Static conflicts are reported, not overwritten.",
+      inputSchema: {
+        repository: z.string().optional(),
+        format: z.enum(["lcov", "otel"]).describe("Coverage export format"),
+        content: z.string().describe("Raw lcov or OTLP JSON content"),
+      },
+    },
+    async ({ repository: path, format, content }) =>
+      run(() => {
+        const repo = repoId(path);
+        const meta = repository.getRepository(repo)!;
+        return ingestRuntime(repository, repo, format, content, meta.rootPath);
+      }),
+  );
+
+  server.registerTool(
     "search_symbols",
     {
       description:
@@ -129,6 +149,21 @@ export function registerTools(server: McpServer, deps: ToolDeps): void {
         const results = graph.searchSymbols(repo, query, coerceNodeType(type));
         return { count: results.length, results };
       }),
+  );
+
+  server.registerTool(
+    "search_semantic",
+    {
+      description:
+        "Rank symbols and graph nodes for a natural-language query with local lexical search; falls back to keyword search without an index.",
+      inputSchema: {
+        repository: z.string().optional(),
+        query: z.string().describe('Natural-language query, e.g. "where is user update handled"'),
+        limit: z.number().int().min(1).max(100).optional(),
+      },
+    },
+    async ({ repository: path, query, limit }) =>
+      run(() => graph.semanticSearch(repoId(path), query, limit ? { limit } : {})),
   );
 
   server.registerTool(

@@ -2,7 +2,7 @@ import type { Diagnostic, EdgeType, Evidence, GraphEdge } from "@relic/graph-cor
 import { CONFIDENCE } from "@relic/graph-core";
 import type { ExtractedFile, RefInfo, RefLookup } from "./extract";
 import type { RepositoryContext } from "./discovery";
-import { databaseTableId, edgeId, fileId, repositoryNodeId, routeId } from "./ids";
+import { databaseTableId, edgeId, fileId, queueId, repositoryNodeId, routeId } from "./ids";
 
 export interface RelationResult {
   edges: GraphEdge[];
@@ -90,9 +90,13 @@ export function relate(
   }
   for (const imp of extracted.imports) {
     if (!imp.targetFile) continue;
-    addEdge(fileId(repo.id, filePath), fileId(repo.id, imp.targetFile), "IMPORTS", {
+    const targetRepository = imp.targetRepositoryId ?? repo.id;
+    addEdge(fileId(repo.id, filePath), fileId(targetRepository, imp.targetFile), "IMPORTS", {
       source: "static",
       file: filePath,
+      ...(targetRepository !== repo.id
+        ? { note: `cross-repository workspace import ${imp.specifier ?? imp.targetFile}` }
+        : {}),
     });
   }
 
@@ -241,6 +245,16 @@ export function relate(
           });
       }
     }
+  }
+
+  // Queue / pub-sub operations.
+  for (const message of extracted.messages) {
+    addEdge(message.sourceId, queueId(repo.id, message.queue), message.mode, {
+      source: "static",
+      file: filePath,
+      line: message.line,
+      note: message.excerpt,
+    });
   }
 
   // SQL data access.

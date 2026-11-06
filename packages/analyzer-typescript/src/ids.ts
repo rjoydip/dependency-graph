@@ -21,5 +21,11 @@ export const frontendOperationId = (repositoryId: string, name: string): string 
   sha1(`${repositoryId}:frontend_operation:${name}`);
 export const databaseTableId = (repositoryId: string, table: string): string =>
   sha1(`${repositoryId}:table:${table}`);
+export const queueId = (repositoryId: string, name: string): string =>
+  sha1(`${repositoryId}:queue:${name}`);
+export const serviceId = (repositoryId: string, name: string): string =>
+  sha1(`${repositoryId}:service:${name}`);
+export const deploymentId = (repositoryId: string, name: string): string =>
+  sha1(`${repositoryId}:deployment:${name}`);
 export const edgeId = (sourceId: string, targetId: string, type: string): string =>
   sha1(`${sourceId}|${targetId}|${type}`);
