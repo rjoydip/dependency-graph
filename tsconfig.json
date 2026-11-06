@@ -5,22 +5,22 @@
       "path": "packages/graph-core"
     },
     {
-      "path": "packages/analyzer-core"
+      "path": "packages/analyzer/core"
     },
     {
-      "path": "packages/analyzer-typescript"
+      "path": "packages/analyzer/typescript"
     },
     {
-      "path": "packages/analyzer-python"
+      "path": "packages/analyzer/python"
     },
     {
-      "path": "packages/analyzer-rust"
+      "path": "packages/analyzer/rust"
     },
     {
-      "path": "packages/analyzer-java"
+      "path": "packages/analyzer/java"
     },
     {
-      "path": "packages/analyzer-go"
+      "path": "packages/analyzer/go"
     },
     {
       "path": "packages/database"

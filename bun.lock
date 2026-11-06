@@ -93,7 +93,7 @@
         "vitepress": "^1.6.4",
       },
     },
-    "packages/analyzer-core": {
+    "packages/analyzer/core": {
       "name": "@relic/analyzer-core",
       "version": "0.1.0",
       "dependencies": {
@@ -101,7 +101,7 @@
         "typescript": "^5.9.2",
       },
     },
-    "packages/analyzer-go": {
+    "packages/analyzer/go": {
       "name": "@relic/analyzer-go",
       "version": "0.1.0",
       "dependencies": {
@@ -109,7 +109,7 @@
         "@relic/graph-core": "workspace:*",
       },
     },
-    "packages/analyzer-java": {
+    "packages/analyzer/java": {
       "name": "@relic/analyzer-java",
       "version": "0.1.0",
       "dependencies": {
@@ -117,7 +117,7 @@
         "@relic/graph-core": "workspace:*",
       },
     },
-    "packages/analyzer-python": {
+    "packages/analyzer/python": {
       "name": "@relic/analyzer-python",
       "version": "0.1.0",
       "dependencies": {
@@ -125,7 +125,7 @@
         "@relic/graph-core": "workspace:*",
       },
     },
-    "packages/analyzer-rust": {
+    "packages/analyzer/rust": {
       "name": "@relic/analyzer-rust",
       "version": "0.1.0",
       "dependencies": {
@@ -133,7 +133,7 @@
         "@relic/graph-core": "workspace:*",
       },
     },
-    "packages/analyzer-typescript": {
+    "packages/analyzer/typescript": {
       "name": "@relic/analyzer-typescript",
       "version": "0.1.0",
       "dependencies": {
@@ -535,17 +535,17 @@
 
     "@redis/time-series": ["@redis/time-series@6.3.1", "", { "peerDependencies": { "@redis/client": "^6.3.1" } }, "sha512-MNDgrm+i63M/1a+XA+HcDsScwt4uBh/fGGJ84swTQZTFK5K5wMmxdlTRa4ZgmNJzjxMaszW/ipPScMUGV3aAMg=="],
 
-    "@relic/analyzer-core": ["@relic/analyzer-core@workspace:packages/analyzer-core"],
+    "@relic/analyzer-core": ["@relic/analyzer-core@workspace:packages/analyzer/core"],
 
-    "@relic/analyzer-go": ["@relic/analyzer-go@workspace:packages/analyzer-go"],
+    "@relic/analyzer-go": ["@relic/analyzer-go@workspace:packages/analyzer/go"],
 
-    "@relic/analyzer-java": ["@relic/analyzer-java@workspace:packages/analyzer-java"],
+    "@relic/analyzer-java": ["@relic/analyzer-java@workspace:packages/analyzer/java"],
 
-    "@relic/analyzer-python": ["@relic/analyzer-python@workspace:packages/analyzer-python"],
+    "@relic/analyzer-python": ["@relic/analyzer-python@workspace:packages/analyzer/python"],
 
-    "@relic/analyzer-rust": ["@relic/analyzer-rust@workspace:packages/analyzer-rust"],
+    "@relic/analyzer-rust": ["@relic/analyzer-rust@workspace:packages/analyzer/rust"],
 
-    "@relic/analyzer-typescript": ["@relic/analyzer-typescript@workspace:packages/analyzer-typescript"],
+    "@relic/analyzer-typescript": ["@relic/analyzer-typescript@workspace:packages/analyzer/typescript"],
 
     "@relic/dashboard": ["@relic/dashboard@workspace:apps/dashboard"],
 

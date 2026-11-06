@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import type { GraphNode } from "@relic/graph-core";
 import { openGraph, repositoryIdFor, type OpenGraph } from "@relic/indexer";
-import { copyFixture, cleanup, tempDir, FIXTURE_ROOT } from "../helpers";
+import { copyFixture, cleanup, tempDir, ANALYZER_FIXTURES } from "../helpers";
 
 let fixture: { root: string; cleanup: () => void };
 let dbDir: string;
@@ -226,7 +226,7 @@ describe("incremental indexing", () => {
   });
 
   it("indexes Python services end-to-end with routes, calls and tests", () => {
-    const root = join(FIXTURE_ROOT, "..", "python-service");
+    const root = join(ANALYZER_FIXTURES, "python", "python-service");
     const pythonRepoId = repositoryIdFor(root);
     const result = graph.indexer.index(root);
 
@@ -242,30 +242,28 @@ describe("incremental indexing", () => {
   });
 
   it("indexes Go, Java and Rust services through the language dispatcher", () => {
-    const root = join(FIXTURE_ROOT, "..", "polyglot");
-    const polyRepoId = repositoryIdFor(root);
-    const result = graph.indexer.index(root);
-
-    expect(result.repositoryId).toBe(polyRepoId);
-    expect(result.totalFiles).toBeGreaterThanOrEqual(10);
-    const diagnostics = graph.graph.getSummary(polyRepoId).diagnostics;
-    expect(diagnostics.some((d) => d.kind === "parse-error")).toBe(false);
-
-    for (const symbol of ["Repo.Update", "UserController.getUser", "Repo.update", "health"]) {
-      expect(graph.graph.searchSymbols(polyRepoId, symbol).length).toBeGreaterThan(0);
+    const expected = {
+      go: ["Repo.Update", "GET /users/:id", "POST /users", "ANY /health"],
+      java: ["UserController.getUser", "GET /users/{id}", "POST /users", "ANY /legacy"],
+      rust: ["Repo.update", "GET /health", "GET /items"],
+    };
+    for (const [language, symbols] of Object.entries(expected)) {
+      const root = join(ANALYZER_FIXTURES, language);
+      const repoId = repositoryIdFor(root);
+      graph.indexer.index(root);
+      const summary = graph.graph.getSummary(repoId);
+      expect(summary.diagnostics.some((d) => d.kind === "parse-error")).toBe(false);
+      const qualified = graph.graph
+        .searchSymbols(repoId, "", "route")
+        .map((node) => node.qualifiedName);
+      for (const symbol of symbols) {
+        if (symbol.includes(" ")) expect(qualified).toContain(symbol);
+        else expect(graph.graph.searchSymbols(repoId, symbol).length).toBeGreaterThan(0);
+      }
+      expect(graph.graph.searchSymbols(repoId, "", "test").length).toBeGreaterThan(0);
+      expect(
+        graph.repository.getEdges({ repositoryId: repoId, edgeTypes: ["CALLS"] }).length,
+      ).toBeGreaterThan(0);
     }
-    const routes = graph.graph.searchSymbols(polyRepoId, "", "route").map((n) => n.qualifiedName);
-    expect(routes).toEqual(
-      expect.arrayContaining([
-        "GET /users/:id",
-        "GET /users/{id}",
-        "POST /users",
-        "GET /health",
-        "GET /items",
-      ]),
-    );
-    expect(graph.graph.searchSymbols(polyRepoId, "", "test").length).toBeGreaterThanOrEqual(3);
-    const calls = graph.repository.getEdges({ repositoryId: polyRepoId, edgeTypes: ["CALLS"] });
-    expect(calls.length).toBeGreaterThan(0);
   });
 });

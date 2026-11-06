@@ -14,19 +14,22 @@ The core promise: when you ask "what breaks if I change `UserService.updateUser`
 packages/
   graph-core/             domain types, GraphRepository interface, GraphService (impact analysis)
   database/               node:sqlite storage behind GraphRepository (recursive-CTE traversal)
-  analyzer-core/          shared analyzer contract, discovery, resolver, manifests
-  analyzer-typescript/    TypeScript/JavaScript analyzer
-  analyzer-python/        Python analyzer
-  analyzer-rust/          Rust analyzer
-  analyzer-java/          Java analyzer
-  analyzer-go/            Go analyzer
+  analyzer/
+    core/                 shared analyzer contract, discovery, resolver, manifests
+    typescript/           TypeScript/JavaScript analyzer
+    python/               Python analyzer
+    rust/                 Rust analyzer
+    java/                 Java analyzer
+    go/                   Go analyzer
   indexer/                incremental indexing (hash change detection, importer re-expansion), runtime evidence
 apps/
   mcp-server/             MCP stdio server: 15 tools, 3 resources, 2 prompts
   api/                    Hono API + the publishable package: `relic` CLI and `relic-mcp` bins
   dashboard/              React + React Flow graph explorer
 tests/
-  fixtures/starter-hono/  deterministic fixture (critical scenario: UserController → UserService.updateUser → UserRepository.update)
+  fixtures/analyzer/typescript/  deterministic fixture (critical scenario: UserController → UserService.updateUser → UserRepository.update)
+  fixtures/analyzer/{python,go,java,rust}/  per-language analyzer fixtures
+  fixtures/{cross-repo,infra}/   workspace and deployment scenarios
   unit|integration|security/
 ```
 

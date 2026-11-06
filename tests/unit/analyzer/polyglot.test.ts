@@ -11,9 +11,9 @@ import {
 import { extractGoFile } from "@relic/analyzer-go";
 import { extractJavaFile } from "@relic/analyzer-java";
 import { extractRustFile } from "@relic/analyzer-rust";
-import { FIXTURE_ROOT } from "../../helpers";
+import { ANALYZER_FIXTURES } from "../../helpers";
 
-const polyglot = join(FIXTURE_ROOT, "..", "polyglot");
+const polyglot = ANALYZER_FIXTURES;
 
 function extractAll(
   root: string,

@@ -10,7 +10,7 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@cross/lib": ["fixtures/cross-repo-lib/src/index.ts"]
+      "@cross/lib": ["fixtures/cross-repo/lib/src/index.ts"]
     }
   },
   "include": ["**/*.ts", "fixtures/**/*.ts"],

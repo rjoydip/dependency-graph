@@ -8,9 +8,9 @@ import {
   type RefLookup,
 } from "@relic/analyzer-core";
 import { extractPythonFile } from "@relic/analyzer-python";
-import { FIXTURE_ROOT } from "../../helpers";
+import { ANALYZER_FIXTURES } from "../../helpers";
 
-const root = join(FIXTURE_ROOT, "..", "python-service");
+const root = join(ANALYZER_FIXTURES, "python", "python-service");
 const repo = makeRepositoryContext(root);
 const paths = walkRepository(root);
 const files = paths.map((path) => extractPythonFile(repo, path));

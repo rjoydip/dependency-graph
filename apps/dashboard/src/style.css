@@ -308,8 +308,6 @@ aside.explorer {
   overflow: hidden;
   padding: 12px;
   gap: 6px;
-  /* tinted panel so the explorer reads as part of the brand palette */
-  background: var(--panel-2);
   border-right: none;
   border-left: 1px solid var(--border);
 }
@@ -1542,6 +1540,10 @@ header .index-form {
   min-height: 0;
   overflow: hidden;
   background: var(--panel);
+}
+/* keep the code surface on the same panel colour as the explorer/inspector */
+.code-modal .cn-code-block {
+  background: transparent;
 }
 /* the focused range is the reason the file opened — make it obvious */
 .code-modal .cn-code-block-line-variant-highlighted {

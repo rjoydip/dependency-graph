@@ -6,6 +6,6 @@
     { "path": "../../packages/graph-core" },
     { "path": "../../packages/database" },
     { "path": "../../packages/indexer" },
-    { "path": "../../packages/analyzer-typescript" }
+    { "path": "../../packages/analyzer/typescript" }
   ]
 }

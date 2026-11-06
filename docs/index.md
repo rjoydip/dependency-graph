@@ -247,7 +247,7 @@ runtime evidence never deletes a static edge.
   Django routes, SQL strings, tests, and broker publish/subscribe calls follow the same contract as TypeScript.
 - **Rust, Java, Go:** module imports (`use crate::…`, `import a.b.C;`, `import "pkg"`), type/class/struct
   containers, methods, calls, SQL, queues, tests, and common framework routes (actix/axum, Spring, Gin/net/http).
-  The per-language packages live under `packages/analyzer-*`; `analyzer-core` owns the shared contract.
+  The per-language packages live under `packages/analyzer/*`; `analyzer-core` owns the shared contract.
 - **Queues and manifests:** publish/subscribe calls create `queue` nodes with `PUBLISHES`/`CONSUMES` edges;
   compose services, Dockerfiles, and Kubernetes workloads create `service`/`deployment` nodes and
   `DEPENDS_ON` edges.
@@ -273,19 +273,22 @@ runtime evidence never deletes a static edge.
 packages/
   graph-core/             domain types, GraphRepository interface, GraphService (impact analysis)
   database/               node:sqlite storage behind GraphRepository (recursive-CTE traversal)
-  analyzer-core/          shared analyzer contract, discovery, resolver, manifests, owners
-  analyzer-typescript/    TypeScript/JavaScript analyzer
-  analyzer-python/        Python analyzer
-  analyzer-rust/          Rust analyzer
-  analyzer-java/          Java analyzer
-  analyzer-go/            Go analyzer
+  analyzer/
+    core/                 shared analyzer contract, discovery, resolver, manifests, owners
+    typescript/           TypeScript/JavaScript analyzer
+    python/               Python analyzer
+    rust/                 Rust analyzer
+    java/                 Java analyzer
+    go/                   Go analyzer
   indexer/                incremental indexing (hash change detection, importer re-expansion), runtime evidence
 apps/
   mcp-server/             MCP stdio server: 15 tools, 3 resources, 2 prompts
   api/                    Hono API + the publishable package: `relic` CLI and `relic-mcp` bins
   dashboard/              React + React Flow graph explorer
 tests/
-  fixtures/starter-hono/  deterministic fixture (UserController → UserService.updateUser → UserRepository.update)
+  fixtures/analyzer/typescript/  deterministic fixture (UserController → UserService.updateUser → UserRepository.update)
+  fixtures/analyzer/{python,go,java,rust}/  per-language analyzer fixtures
+  fixtures/{cross-repo,infra}/   workspace and deployment scenarios
   unit|integration|security/
 ```
 

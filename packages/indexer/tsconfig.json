@@ -10,22 +10,22 @@
       "path": "../graph-core"
     },
     {
-      "path": "../analyzer-core"
+      "path": "../analyzer/core"
     },
     {
-      "path": "../analyzer-typescript"
+      "path": "../analyzer/typescript"
     },
     {
-      "path": "../analyzer-python"
+      "path": "../analyzer/python"
     },
     {
-      "path": "../analyzer-rust"
+      "path": "../analyzer/rust"
     },
     {
-      "path": "../analyzer-java"
+      "path": "../analyzer/java"
     },
     {
-      "path": "../analyzer-go"
+      "path": "../analyzer/go"
     },
     {
       "path": "../database"

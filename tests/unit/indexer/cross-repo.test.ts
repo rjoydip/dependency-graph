@@ -4,8 +4,8 @@ import { openGraph, type OpenGraph } from "@relic/indexer";
 import { cleanup, tempDir } from "../../helpers";
 
 const fixtures = join(import.meta.dir, "..", "..", "fixtures");
-const libRoot = join(fixtures, "cross-repo-lib");
-const appRoot = join(fixtures, "cross-repo-app");
+const libRoot = join(fixtures, "cross-repo", "lib");
+const appRoot = join(fixtures, "cross-repo", "app");
 
 let graph: OpenGraph | null = null;
 let dbDir: string | null = null;

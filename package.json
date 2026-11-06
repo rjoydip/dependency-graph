@@ -3,7 +3,10 @@
   "private": true,
   "workspaces": [
     "apps/*",
-    "packages/*",
+    "packages/graph-core",
+    "packages/database",
+    "packages/indexer",
+    "packages/analyzer/*",
     "docs"
   ],
   "type": "module",

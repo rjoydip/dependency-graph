@@ -25,12 +25,12 @@ never invented edges.
 | ------------------------------ | --------------------------------------------------------------------------------------------- |
 | `packages/graph-core`          | Domain types, `GraphRepository` contract, `GraphService` (traversal, impact, analytics, risk) |
 | `packages/database`            | SQLite storage (`node:sqlite`) behind `GraphRepository`, recursive-CTE traversal              |
-| `packages/analyzer-core`       | Shared contract, discovery, resolver, manifests, owners                                       |
-| `packages/analyzer-typescript` | TypeScript/JavaScript analyzer                                                                |
-| `packages/analyzer-python`     | Python analyzer                                                                               |
-| `packages/analyzer-rust`       | Rust analyzer                                                                                 |
-| `packages/analyzer-java`       | Java analyzer                                                                                 |
-| `packages/analyzer-go`         | Go analyzer                                                                                   |
+| `packages/analyzer/core`       | Shared contract, discovery, resolver, manifests, owners                                       |
+| `packages/analyzer/typescript` | TypeScript/JavaScript analyzer                                                                |
+| `packages/analyzer/python`     | Python analyzer                                                                               |
+| `packages/analyzer/rust`       | Rust analyzer                                                                                 |
+| `packages/analyzer/java`       | Java analyzer                                                                                 |
+| `packages/analyzer/go`         | Go analyzer                                                                                   |
 | `packages/indexer`             | Incremental indexing, change detection, owner metadata, git-diff helpers                      |
 | `apps/mcp-server`              | MCP tools, resources, prompts over stdio                                                      |
 | `apps/api`                     | Hono API, publishable `relic` / `relic-mcp` package, CLI, dashboard host                      |
@@ -128,11 +128,6 @@ re-index.
   `analyzer-java`, `analyzer-go`; the indexer dispatches by extension.
 - Rust/Java/Go share a regex-driven brace-language engine for symbols, imports,
   calls, SQL, queues, tests, and actix/axum, Spring, Gin and net/http routes.
-
-## Sequencing
-
-1. Add new capabilities only when a real repository or language demands them.
-2. Keep the quality gates and evidence model intact as analyzers and sources grow.
 
 ## Non-goals and constraints
 

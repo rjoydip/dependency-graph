@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from "bun:test";
 import { cleanup, tempDir } from "../../helpers";
 import { openGraph, repositoryIdFor, type OpenGraph } from "@relic/indexer";
 
-const root = join(import.meta.dir, "..", "..", "fixtures", "infra-repo");
+const root = join(import.meta.dir, "..", "..", "fixtures", "infra", "repo");
 let graph: OpenGraph | null = null;
 let dbDir: string | null = null;
 
