@@ -1,10 +1,12 @@
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
+import { EventEmitter } from "node:events";
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve, sep } from "node:path";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { streamSSE } from "hono/streaming";
 import { GraphError } from "@relic/graph-core";
 import type { EdgeType, GraphEdge, GraphNode, NodeType, RepositoryMeta } from "@relic/graph-core";
 import { openGraph, repositoryIdFor, type OpenGraph } from "@relic/indexer";
@@ -14,6 +16,16 @@ export interface ApiOptions {
   /** When set, repository paths must resolve inside one of these roots. */
   allowedRoots?: string[];
 }
+
+export interface GraphUpdateEvent {
+  repositoryId: string;
+  nodeCount: number;
+  edgeCount: number;
+  revision: string | null;
+  indexedAt: string | null;
+}
+
+export type RelicApp = Hono & { graph: OpenGraph; events: EventEmitter };
 
 const MAX_LIMIT = 5000;
 
@@ -86,10 +98,12 @@ function ensureGitHubClone(url: string): string {
   return dir;
 }
 
-export function buildApp(options: ApiOptions): Hono & { graph: OpenGraph } {
+export function buildApp(options: ApiOptions): RelicApp {
   const store = openGraph(options.dbPath);
-  const app = new Hono() as Hono & { graph: OpenGraph };
+  const app = new Hono() as RelicApp;
   app.graph = store;
+  app.events = new EventEmitter();
+  app.events.setMaxListeners(0); // one listener per open SSE stream
   // the dashboard can be hosted separately (static Worker, Vite on another port)
   app.use("/api/*", cors());
 
@@ -138,6 +152,42 @@ export function buildApp(options: ApiOptions): Hono & { graph: OpenGraph } {
     return meta;
   };
 
+  const indexAndNotify = (root: string, revision?: string | null) => {
+    const result = store.indexer.index(root, revision !== undefined ? { revision } : {});
+    const payload: GraphUpdateEvent = {
+      repositoryId: result.repositoryId,
+      nodeCount: result.nodeCount,
+      edgeCount: result.edgeCount,
+      revision: result.revision,
+      indexedAt: new Date().toISOString(),
+    };
+    app.events.emit("graph-updated", payload);
+    return result;
+  };
+
+  app.get("/api/events", (c) =>
+    streamSSE(c, async (stream) => {
+      let closed = false;
+      const listener = (payload: GraphUpdateEvent): void => {
+        void stream.writeSSE({
+          event: "graph-updated",
+          data: JSON.stringify(payload),
+        });
+      };
+      app.events.on("graph-updated", listener);
+      stream.onAbort(() => {
+        closed = true;
+        app.events.off("graph-updated", listener);
+      });
+      while (!closed) {
+        await stream.sleep(20_000);
+        if (closed) break;
+        // keep-alive so proxies do not drop an idle stream
+        await stream.writeSSE({ event: "ping", data: "{}" });
+      }
+    }),
+  );
+
   app.get("/api/repositories", (c) =>
     c.json({ repositories: store.repository.listRepositories() }),
   );
@@ -171,7 +221,7 @@ export function buildApp(options: ApiOptions): Hono & { graph: OpenGraph } {
       const root = body.root ?? meta?.rootPath;
       if (!root) throw new GraphError("INVALID_INPUT", "repository root is required for indexing");
       assertAllowed(resolve(root));
-      return c.json(store.indexer.index(root));
+      return c.json(indexAndNotify(root));
     } catch (err) {
       return fail(c, err);
     }
@@ -212,7 +262,7 @@ export function buildApp(options: ApiOptions): Hono & { graph: OpenGraph } {
         root = resolve(source);
         assertAllowed(root);
       }
-      return c.json(store.indexer.index(root));
+      return c.json(indexAndNotify(root));
     } catch (err) {
       return fail(c, err);
     }
@@ -460,6 +510,16 @@ export function buildApp(options: ApiOptions): Hono & { graph: OpenGraph } {
       if (body.includeIndirectDependencies !== undefined)
         opts.includeIndirect = body.includeIndirectDependencies;
       return c.json(store.graph.analyzeImpact(repository, nodeId, opts));
+    } catch (err) {
+      return fail(c, err);
+    }
+  });
+
+  app.get("/api/cycles", (c) => {
+    try {
+      const repository = resolveRepo(c.req.query("repository"));
+      requireIndex(repository);
+      return c.json(store.graph.findCycles(repository));
     } catch (err) {
       return fail(c, err);
     }

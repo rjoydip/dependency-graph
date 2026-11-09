@@ -109,3 +109,35 @@ test("importSnapshot posts the snapshot body", async () => {
   expect(call.init?.method).toBe("POST");
   expect(JSON.parse(String(call.init?.body))).toEqual(snapshot);
 });
+
+test("cycles and impact build their requests", async () => {
+  mockFetch(() => Response.json({ cycles: [], nodeCount: 0 }));
+  await api.cycles("r 1");
+  expect(calls[0]?.url).toBe("/api/cycles?repository=r%201");
+  expect(api.eventsUrl()).toBe("/api/events");
+
+  calls = [];
+  mockFetch(() => Response.json({}));
+  await api.impact("r 1", "node/1");
+  const call = calls[0]!;
+  expect(call.url).toBe("/api/impact");
+  expect(call.init?.method).toBe("POST");
+  expect(JSON.parse(String(call.init?.body))).toEqual({
+    repository: "r 1",
+    nodeId: "node/1",
+    includeTests: undefined,
+    includeIndirectDependencies: undefined,
+    maxDepth: undefined,
+  });
+
+  calls = [];
+  mockFetch(() => Response.json({}));
+  await api.impact("r", "n", { includeTests: false, includeIndirect: true, maxDepth: 2 });
+  expect(JSON.parse(String(calls[0]?.init?.body))).toEqual({
+    repository: "r",
+    nodeId: "n",
+    includeTests: false,
+    includeIndirectDependencies: true,
+    maxDepth: 2,
+  });
+});

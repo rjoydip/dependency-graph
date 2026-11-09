@@ -30,6 +30,64 @@ export interface GraphEdgeDto {
   evidence: { source: string; file?: string; line?: number; note?: string };
 }
 
+export interface DiagnosticDto {
+  kind: string;
+  message: string;
+  file?: string;
+  line?: number;
+}
+
+/** `POST /api/impact` — upstream rows break when the target changes;
+ * downstream rows are the target's own direct dependencies. */
+export interface ImpactResultDto {
+  target: GraphNodeDto;
+  affected: Array<{
+    node: GraphNodeDto;
+    relationship: string;
+    direction: "upstream" | "downstream";
+    depth: number;
+    confidence: number;
+    evidence: GraphEdgeDto["evidence"];
+  }>;
+  summary: {
+    affectedSymbols: number;
+    affectedTests: number;
+    unresolvedRelationships: number;
+    maxDepth: number;
+    risk: RiskAssessmentDto;
+  };
+}
+
+export interface RiskFactorDto {
+  key: string;
+  label: string;
+  points: number;
+}
+
+/** Deterministic 0-100 blast-radius score; factor points sum to `score`. */
+export interface RiskAssessmentDto {
+  score: number;
+  factors: RiskFactorDto[];
+}
+
+export interface CouplingMetricDto {
+  fanIn: number;
+  fanOut: number;
+  instability: number;
+}
+
+export interface CycleDto {
+  id: string;
+  size: number;
+  nodes: GraphNodeDto[];
+  edges: GraphEdgeDto[];
+}
+
+export interface CycleReportDto {
+  cycles: CycleDto[];
+  nodeCount: number;
+}
+
 /** Portable graph export — the header download and the index-screen upload. */
 export interface Snapshot {
   format: "relic-snapshot";
@@ -41,7 +99,7 @@ export interface Snapshot {
     indexedAt: string | null;
     durationMs: number | null;
     fileCount: number;
-    diagnostics: Array<{ kind: string; message: string; file?: string }>;
+    diagnostics: Array<{ kind: string; message: string; file?: string; line?: number }>;
   };
   nodes: GraphNodeDto[];
   edges: GraphEdgeDto[];
@@ -59,7 +117,7 @@ export interface IndexStatusDto {
   fileCount: number;
   nodeCount: number;
   edgeCount: number;
-  diagnostics: Array<{ kind: string; message: string; file?: string }>;
+  diagnostics: DiagnosticDto[];
 }
 
 // Static deployments (Cloudflare) have no API of their own; point the build at
@@ -77,9 +135,13 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  /** SSE stream: `graph-updated` events after any index/re-index. */
+  eventsUrl: () => `${API_ORIGIN}/api/events`,
   repositories: () => request<{ repositories: Repository[] }>("/repositories"),
   indexStatus: (repo: string) =>
     request<IndexStatusDto>(`/index-status?repository=${encodeURIComponent(repo)}`),
+  cycles: (repo: string) =>
+    request<CycleReportDto>(`/cycles?repository=${encodeURIComponent(repo)}`),
   nodes: (repo: string, q?: string, type?: string) =>
     request<{ nodes: GraphNodeDto[] }>(
       `/graph/nodes?repository=${encodeURIComponent(repo)}&limit=2000${q ? `&q=${encodeURIComponent(q)}` : ""}${type ? `&type=${type}` : ""}`,
@@ -101,6 +163,22 @@ export const api = {
     request<{ tests: GraphNodeDto[] }>(
       `/tests/related?repository=${encodeURIComponent(repo)}&symbol=${encodeURIComponent(symbol)}`,
     ),
+  impact: (
+    repo: string,
+    nodeId: string,
+    options: { includeTests?: boolean; includeIndirect?: boolean; maxDepth?: number } = {},
+  ) =>
+    request<ImpactResultDto>("/impact", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        repository: repo,
+        nodeId,
+        includeTests: options.includeTests,
+        includeIndirectDependencies: options.includeIndirect,
+        maxDepth: options.maxDepth,
+      }),
+    }),
   indexSource: (source: string) =>
     request<{ repositoryId: string; nodeCount: number; edgeCount: number }>("/index", {
       method: "POST",

@@ -79,11 +79,11 @@ const TONE_OF: Record<string, Tone> = {
   TESTS: "tests",
 };
 
-// turbo-flow palette: violet edges, magenta for data, blue for tests
+// turbo-flow palette: violet edges, teal for data, blue for tests
 const TONE_HEX: Record<Tone, Record<"dark" | "light", string>> = {
   structure: { dark: "#5a4668", light: "#7d6b8a" },
   flow: { dark: "#7a4a9b", light: "#6a3f86" },
-  data: { dark: "#c73f92", light: "#a03370" },
+  data: { dark: "#2fb3a3", light: "#0f766e" },
   tests: { dark: "#467ce1", light: "#2f5fb0" },
 };
 
@@ -103,6 +103,8 @@ export interface GraphCanvasProps {
   nodes: GraphNodeDto[];
   edges: GraphEdgeDto[];
   selectedId: string | null;
+  /** nodes in the currently highlighted cycle (empty = none) */
+  highlightIds?: string[];
   onSelect: (id: string, fromGraph?: boolean) => void;
 }
 
@@ -185,9 +187,7 @@ function FlowNodeCard({ data }: NodeProps<Node<FlowData>>) {
         <Icon aria-hidden="true" />
       </span>
       <span className="fn-body">
-        <span className="fn-name" title={data.file ?? data.label}>
-          {data.label}
-        </span>
+        <span className="fn-name">{data.label}</span>
         <span className="fn-type">{data.kind ?? data.nodeType.replace(/_/g, " ")}</span>
       </span>
       <Handle type="source" position={Position.Right} className="flow-handle" />
@@ -211,6 +211,7 @@ function FlowView({
   nodes,
   edges,
   selectedId,
+  highlightIds = [],
   onSelect,
 }: GraphCanvasProps) {
   const { setCenter, getViewport, setViewport } = useReactFlow();
@@ -267,76 +268,90 @@ function FlowView({
 
   // Direct neighbours of the selection — everything else dims so the local
   // dependency picture stays readable at any graph size.
-  const focus = new Set<string>();
-  if (selectedId) {
-    focus.add(selectedId);
-    for (const e of edges) {
-      if (e.sourceId === selectedId) focus.add(e.targetId);
-      else if (e.targetId === selectedId) focus.add(e.sourceId);
+  const focus = useMemo(() => {
+    const next = new Set<string>();
+    if (!selectedId) return next;
+    next.add(selectedId);
+    for (const edge of edges) {
+      if (edge.sourceId === selectedId) next.add(edge.targetId);
+      else if (edge.targetId === selectedId) next.add(edge.sourceId);
     }
-  }
+    return next;
+  }, [selectedId, edges]);
 
-  const visible = new Set(nodes.map((n) => n.id));
+  const visible = useMemo(() => new Set(nodes.map((n) => n.id)), [nodes]);
+  const highlight = useMemo(() => new Set(highlightIds), [highlightIds]);
 
-  const flowNodes: Node<FlowData>[] = nodes.map((n) => {
-    const selected = n.id === selectedId;
-    const dimmed = !selected && selectedId !== null && !focus.has(n.id);
-    return {
-      id: n.id,
-      type: "flow",
-      // explicit dimensions keep bounds stable before nodes are measured
-      width: NODE_W,
-      height: NODE_H,
-      position: position.get(n.id) ?? { x: 0, y: 0 },
-      data: {
-        label: `${n.name}${n.startLine ? `:${n.startLine}` : ""}`,
-        nodeType: n.type,
-        file: n.filePath,
-        kind: typeof n.metadata?.kind === "string" ? n.metadata.kind : null,
-      },
-      className: `flow-node${selected ? " sel" : ""}${dimmed ? " dim" : ""}${
-        !selected && !dimmed && focus.has(n.id) ? " near" : ""
-      }`,
-      // visuals live in style.css (theme + hover states); only the per-type
-      // accent varies per node, as a CSS custom property
-      style: { "--node-accent": COLOR[n.type] ?? "#5d6b7f" } as CSSProperties,
-    };
-  });
+  const flowNodes: Node<FlowData>[] = useMemo(
+    () =>
+      nodes.map((n) => {
+        const selected = n.id === selectedId;
+        const inCycle = highlight.has(n.id);
+        const dimmed = !selected && selectedId !== null && !focus.has(n.id) && !inCycle;
+        return {
+          id: n.id,
+          type: "flow",
+          // explicit dimensions keep bounds stable before nodes are measured
+          width: NODE_W,
+          height: NODE_H,
+          position: position.get(n.id) ?? { x: 0, y: 0 },
+          data: {
+            label: `${n.qualifiedName ?? n.name}${n.startLine ? `:${n.startLine}` : ""}`,
+            nodeType: n.type,
+            file: n.filePath,
+            kind: typeof n.metadata?.kind === "string" ? n.metadata.kind : null,
+          },
+          className: `flow-node${selected ? " sel" : ""}${dimmed ? " dim" : ""}${
+            !selected && !dimmed && focus.has(n.id) ? " near" : ""
+          }${inCycle ? " cycle" : ""}`,
+          // visuals live in style.css (theme + hover states); only the per-type
+          // accent varies per node, as a CSS custom property
+          style: { "--node-accent": COLOR[n.type] ?? "#5d6b7f" } as CSSProperties,
+        };
+      }),
+    [nodes, position, selectedId, focus, highlight],
+  );
 
-  const flowEdges: Edge[] = edges
-    .filter((e) => visible.has(e.sourceId) && visible.has(e.targetId))
-    .map((e) => {
-      const hot = selectedId !== null && (e.sourceId === selectedId || e.targetId === selectedId);
-      const dimming = selectedId !== null && !hot;
-      const tone = toneOf(e.type);
-      const color = hot ? "var(--accent)" : TONE_HEX[tone][theme];
-      return {
-        id: e.id,
-        source: e.sourceId,
-        target: e.targetId,
-        type: "smoothstep",
-        // edge labels only on highlighted edges — a large graph stays readable
-        ...(hot ? { label: e.type } : {}),
-        labelStyle: { fill: "var(--dim)", fontSize: 10 },
-        labelBgStyle: { fill: "var(--panel)" },
-        style: {
-          stroke: color,
-          strokeWidth: hot ? 2 : 1.3,
-          strokeOpacity: dimming
-            ? theme === "light"
-              ? 0.16
-              : 0.1
-            : hot
-              ? 1
-              : tone === "structure"
-                ? 0.55
-                : 0.85,
-        },
-        // animation is a focus signal, not wallpaper
-        animated: hot,
-        markerEnd: { type: MarkerType.ArrowClosed, color, width: 14, height: 14 },
-      };
-    });
+  const flowEdges: Edge[] = useMemo(
+    () =>
+      edges
+        .filter((e) => visible.has(e.sourceId) && visible.has(e.targetId))
+        .map((e) => {
+          const hot =
+            selectedId !== null && (e.sourceId === selectedId || e.targetId === selectedId);
+          const inCycle = highlight.has(e.sourceId) && highlight.has(e.targetId);
+          const dimming = selectedId !== null && !hot && !inCycle;
+          const tone = toneOf(e.type);
+          const color = hot || inCycle ? "var(--accent)" : TONE_HEX[tone][theme];
+          return {
+            id: e.id,
+            source: e.sourceId,
+            target: e.targetId,
+            type: "smoothstep",
+            // edge labels only on highlighted edges — a large graph stays readable
+            ...(hot ? { label: e.type } : {}),
+            labelStyle: { fill: "var(--dim)", fontSize: 10 },
+            labelBgStyle: { fill: "var(--panel)" },
+            style: {
+              stroke: color,
+              strokeWidth: hot || inCycle ? 2 : 1.3,
+              strokeOpacity: dimming
+                ? theme === "light"
+                  ? 0.16
+                  : 0.1
+                : hot || inCycle
+                  ? 1
+                  : tone === "structure"
+                    ? 0.55
+                    : 0.85,
+            },
+            // animation is a focus signal, not wallpaper
+            animated: hot || inCycle,
+            markerEnd: { type: MarkerType.ArrowClosed, color, width: 14, height: 14 },
+          };
+        }),
+    [edges, visible, selectedId, highlight, theme],
+  );
 
   // Counts per tone for the legend; only tones present in the current view.
   const toneCounts = new Map<Tone, number>();
@@ -349,23 +364,23 @@ function FlowView({
     .map((tone) => ({ tone, count: toneCounts.get(tone) ?? 0 }))
     .filter((t) => t.count > 0);
 
-  // Initial view: a readable zoom anchored at the top of the graph. Fitting
-  // the whole graph to the screen shrinks big repos into unreadable dots —
-  // clamp the zoom instead and let the user scroll down to explore.
-  // Set in onInit, NOT in an effect: ReactFlow applies its own default
-  // viewport asynchronously while initialising, which overwrites any
-  // setViewport call made earlier. (key={repoId} remounts GraphCanvas, so
-  // this re-runs per repo.)
+  // Initial view: a readable zoom anchored at the top of the graph. When the
+  // graph is wider than the canvas, left-align it so entry points are never
+  // clipped off-screen; otherwise centre it.
   const applyInitialViewport = () => {
     const el = containerRef.current;
     if (!el || flowNodes.length === 0) return;
     const bounds = getNodesBounds(flowNodes);
     const pad = 40;
-    // fit the graph's width when it fits, stay within [0.55, 0.9] otherwise
     const zoom = Math.min(0.9, Math.max(0.55, (el.clientWidth - pad * 2) / bounds.width));
+    const scaledWidth = bounds.width * zoom;
+    const x =
+      scaledWidth <= el.clientWidth - pad * 2
+        ? (el.clientWidth - scaledWidth) / 2 - bounds.x * zoom
+        : pad - bounds.x * zoom;
     setViewport({
       zoom,
-      x: (el.clientWidth - bounds.width * zoom) / 2 - bounds.x * zoom,
+      x,
       // extra headroom keeps the lane headers visible above the first row
       y: pad + 18 - bounds.y * zoom,
     });
@@ -380,6 +395,8 @@ function FlowView({
       minZoom={0.15}
       colorMode={theme}
       nodesDraggable={false}
+      elevateNodesOnSelect={false}
+      onlyRenderVisibleElements
       panOnScroll
       onInit={applyInitialViewport}
       onNodeClick={(_, node) => onSelect(node.id, true)}
