@@ -8,8 +8,19 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { streamSSE } from "hono/streaming";
 import { GraphError } from "@dependency-graph/graph-core";
-import type { EdgeType, GraphEdge, GraphNode, NodeType, RepositoryMeta } from "@dependency-graph/graph-core";
-import { ingestRuntime, openGraph, repositoryIdFor, type OpenGraph } from "@dependency-graph/indexer";
+import type {
+  EdgeType,
+  GraphEdge,
+  GraphNode,
+  NodeType,
+  RepositoryMeta,
+} from "@dependency-graph/graph-core";
+import {
+  ingestRuntime,
+  openGraph,
+  repositoryIdFor,
+  type OpenGraph,
+} from "@dependency-graph/indexer";
 
 export interface ApiOptions {
   dbPath: string;

@@ -38,7 +38,7 @@ describe("graph export", () => {
 
   it("renders Graphviz DOT", () => {
     const dot = toDot(nodes, [edge]);
-    expect(dot).toContain("digraph \"dependency-graph\" {");
+    expect(dot).toContain('digraph "dependency-graph" {');
     expect(dot).toContain('n0 [label="caller (symbol)"];');
     expect(dot).toContain('n0 -> n1 [label="CALLS"];');
     expect(dot).toContain('weird\\"name');

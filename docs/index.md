@@ -80,9 +80,9 @@ built the bundle.
 
 ### Environment
 
-| Variable           | Default                   | Effect                                            |
-| ------------------ | ------------------------- | ------------------------------------------------- |
-| `DEPENDENCY_GRAPH_REPOSITORY` | —                         | Default repository for tool calls (path or id)    |
+| Variable                      | Default                              | Effect                                            |
+| ----------------------------- | ------------------------------------ | ------------------------------------------------- |
+| `DEPENDENCY_GRAPH_REPOSITORY` | —                                    | Default repository for tool calls (path or id)    |
 | `DEPENDENCY_GRAPH_ROOT`       | `DEPENDENCY_GRAPH_REPOSITORY` or cwd | Project auto-indexed at startup                   |
 | `DEPENDENCY_GRAPH_DB`         | `<tmpdir>/dependency-graph.db`       | Graph SQLite file (shared with the CLI/dashboard) |
 

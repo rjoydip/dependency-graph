@@ -12,7 +12,8 @@ export function createMcpServer(options: { dbPath?: string } = {}): {
   graph: OpenGraph;
   close: () => void;
 } {
-  const dbPath = options.dbPath ?? process.env.DEPENDENCY_GRAPH_DB ?? join(tmpdir(), "dependency-graph.db");
+  const dbPath =
+    options.dbPath ?? process.env.DEPENDENCY_GRAPH_DB ?? join(tmpdir(), "dependency-graph.db");
   const graph = openGraph(dbPath);
   const server = new McpServer({ name: "dependency-graph", version: "0.1.0" });
   registerTools(server, {
@@ -27,7 +28,8 @@ export async function main(): Promise<void> {
   const { server, graph } = createMcpServer();
   // Auto-index the launch directory (or an explicit project) so tools answer
   // immediately; failures degrade to the index_repository tool.
-  const root = process.env.DEPENDENCY_GRAPH_ROOT ?? process.env.DEPENDENCY_GRAPH_REPOSITORY ?? process.cwd();
+  const root =
+    process.env.DEPENDENCY_GRAPH_ROOT ?? process.env.DEPENDENCY_GRAPH_REPOSITORY ?? process.cwd();
   try {
     const result = graph.indexer.index(root);
     console.error(`auto-indexed ${root}: ${result.nodeCount} nodes, ${result.edgeCount} edges`);

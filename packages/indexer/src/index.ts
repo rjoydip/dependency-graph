@@ -3,7 +3,11 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import type { Diagnostic, GraphRepository, RepositoryMeta } from "@dependency-graph/graph-core";
 import { GraphService } from "@dependency-graph/graph-core";
-import { DatabaseClient, SqliteGraphRepository, type ReplaceGraphInput } from "@dependency-graph/database";
+import {
+  DatabaseClient,
+  SqliteGraphRepository,
+  type ReplaceGraphInput,
+} from "@dependency-graph/database";
 import {
   extractManifest,
   fileId,

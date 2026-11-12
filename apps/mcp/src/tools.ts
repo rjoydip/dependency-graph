@@ -38,7 +38,11 @@ export function registerTools(server: McpServer, deps: ToolDeps): void {
   const { graph, indexer, repository } = deps;
 
   const repoId = (input?: string): string => {
-    const path = input ?? process.env.DEPENDENCY_GRAPH_ROOT ?? process.env.DEPENDENCY_GRAPH_REPOSITORY ?? process.cwd();
+    const path =
+      input ??
+      process.env.DEPENDENCY_GRAPH_ROOT ??
+      process.env.DEPENDENCY_GRAPH_REPOSITORY ??
+      process.cwd();
     const id = coerceRepositoryId(
       path,
       (candidate) => repository.getRepository(candidate) !== null,
@@ -105,7 +109,10 @@ export function registerTools(server: McpServer, deps: ToolDeps): void {
       run(() => {
         const root = path ?? process.env.DEPENDENCY_GRAPH_REPOSITORY;
         if (!root)
-          throw new GraphError("INVALID_INPUT", "repository is required (or set DEPENDENCY_GRAPH_REPOSITORY)");
+          throw new GraphError(
+            "INVALID_INPUT",
+            "repository is required (or set DEPENDENCY_GRAPH_REPOSITORY)",
+          );
         return indexer.index(root, revision !== undefined ? { revision } : {});
       }),
   );

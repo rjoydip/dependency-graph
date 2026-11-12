@@ -248,7 +248,9 @@ if (mode === "diff") {
     const indexed = app.graph.indexer.index(root);
     const config = loadBoundaryConfig(root, opts.config ?? undefined);
     if (!config) {
-      throw new Error("No boundary config found. Create .dependency-graphrc.json or pass --config <file>.");
+      throw new Error(
+        "No boundary config found. Create .dependency-graphrc.json or pass --config <file>.",
+      );
     }
     const edges = app.graph.repository.getEdges({
       repositoryId: indexed.repositoryId,

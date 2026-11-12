@@ -12,7 +12,8 @@ const apiUrl = `http://127.0.0.1:${API_PORT}`;
 const dbPath = join(tmpdir(), `dependency-graph-e2e-${process.pid}.db`);
 try {
   for (const f of readdirSync(tmpdir())) {
-    if (f.startsWith("dependency-graph-e2e-") && f.endsWith(".db")) rmSync(join(tmpdir(), f), { force: true });
+    if (f.startsWith("dependency-graph-e2e-") && f.endsWith(".db"))
+      rmSync(join(tmpdir(), f), { force: true });
   }
 } catch {
   // best effort — a stale tmp db is not worth failing the run for

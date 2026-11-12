@@ -1,4 +1,9 @@
-import type { Evidence, GraphNode, GraphRepository, GraphService } from "@dependency-graph/graph-core";
+import type {
+  Evidence,
+  GraphNode,
+  GraphRepository,
+  GraphService,
+} from "@dependency-graph/graph-core";
 import { changedRanges, symbolsForRanges, type ChangedRange } from "@dependency-graph/indexer";
 
 export interface PrAffectedRow {

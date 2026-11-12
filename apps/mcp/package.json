@@ -4,11 +4,11 @@
   "type": "module",
   "main": "src/index.ts",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.20.0",
     "@dependency-graph/analyzer-typescript": "workspace:*",
     "@dependency-graph/database": "workspace:*",
     "@dependency-graph/graph-core": "workspace:*",
     "@dependency-graph/indexer": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.20.0",
     "zod": "^4.6.6"
   }
 }

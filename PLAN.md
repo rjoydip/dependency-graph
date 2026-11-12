@@ -21,20 +21,20 @@ never invented edges.
 
 ## Architecture
 
-| Package                        | Responsibility                                                                                |
-| ------------------------------ | --------------------------------------------------------------------------------------------- |
-| `packages/core`                | Domain types, `GraphRepository` contract, `GraphService` (traversal, impact, analytics, risk) |
-| `packages/database`            | SQLite storage (`node:sqlite`) behind `GraphRepository`, recursive-CTE traversal              |
-| `packages/analyzer/core`       | Shared contract, discovery, resolver, manifests, owners                                       |
-| `packages/analyzer/typescript` | TypeScript/JavaScript analyzer                                                                |
-| `packages/analyzer/python`     | Python analyzer                                                                               |
-| `packages/analyzer/rust`       | Rust analyzer                                                                                 |
-| `packages/analyzer/java`       | Java analyzer                                                                                 |
-| `packages/analyzer/go`         | Go analyzer                                                                                   |
-| `packages/indexer`             | Incremental indexing, change detection, owner metadata, git-diff helpers                      |
-| `apps/mcp`                     | MCP tools, resources, prompts over stdio                                                      |
-| `apps/api`                     | Hono API, publishable `dependency-graph` / `dependency-graph-mcp` package, CLI, dashboard host                      |
-| `apps/dashboard`               | React + React Flow explorer                                                                   |
+| Package                        | Responsibility                                                                                 |
+| ------------------------------ | ---------------------------------------------------------------------------------------------- |
+| `packages/core`                | Domain types, `GraphRepository` contract, `GraphService` (traversal, impact, analytics, risk)  |
+| `packages/database`            | SQLite storage (`node:sqlite`) behind `GraphRepository`, recursive-CTE traversal               |
+| `packages/analyzer/core`       | Shared contract, discovery, resolver, manifests, owners                                        |
+| `packages/analyzer/typescript` | TypeScript/JavaScript analyzer                                                                 |
+| `packages/analyzer/python`     | Python analyzer                                                                                |
+| `packages/analyzer/rust`       | Rust analyzer                                                                                  |
+| `packages/analyzer/java`       | Java analyzer                                                                                  |
+| `packages/analyzer/go`         | Go analyzer                                                                                    |
+| `packages/indexer`             | Incremental indexing, change detection, owner metadata, git-diff helpers                       |
+| `apps/mcp`                     | MCP tools, resources, prompts over stdio                                                       |
+| `apps/api`                     | Hono API, publishable `dependency-graph` / `dependency-graph-mcp` package, CLI, dashboard host |
+| `apps/dashboard`               | React + React Flow explorer                                                                    |
 
 **Data flow:** walk repository → extract per file → resolve cross-file edges →
 persist transactionally → query through `GraphService` → MCP / HTTP / CLI / dashboard.

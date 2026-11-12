@@ -12,7 +12,10 @@ describe("dependency-graph init", () => {
     try {
       const first = initProject(root);
       const config = JSON.parse(readFileSync(first.mcpConfig, "utf8")) as {
-        mcpServers: Record<string, { command: string; env: { DEPENDENCY_GRAPH_REPOSITORY: string } }>;
+        mcpServers: Record<
+          string,
+          { command: string; env: { DEPENDENCY_GRAPH_REPOSITORY: string } }
+        >;
       };
       expect(config.mcpServers["dependency-graph"]?.command).toBe("npx");
       expect(config.mcpServers["dependency-graph"]?.env.DEPENDENCY_GRAPH_REPOSITORY).toBe(root);

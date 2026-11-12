@@ -564,15 +564,15 @@ export function App() {
             {staticMode ? (
               <p className="static-note">
                 This hosted dashboard is read-only. Load a <code>.json</code> snapshot exported from
-                Dependency Graph to browse its dependency graph — indexing and re-indexing run in the local
-                app. Use <strong>Download snapshot</strong> there to create one.
+                Dependency Graph to browse its dependency graph — indexing and re-indexing run in
+                the local app. Use <strong>Download snapshot</strong> there to create one.
               </p>
             ) : (
               <>
                 <p className="muted">
-                  Point Dependency Graph at a local folder or a public GitHub repository. It maps files,
-                  routes, classes, calls and tests into one graph — local paths never leave your
-                  machine.
+                  Point Dependency Graph at a local folder or a public GitHub repository. It maps
+                  files, routes, classes, calls and tests into one graph — local paths never leave
+                  your machine.
                 </p>
                 <IndexForm busy={indexing} onIndex={runIndex} />
               </>
