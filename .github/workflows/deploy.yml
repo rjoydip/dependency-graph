@@ -2,7 +2,7 @@ name: deploy
 
 on:
   push:
-    branches: [main, chore/rename-dependency-graph]
+    branches: [main]
     paths:
       - "apps/dashboard/**"
       - "docs/**"
