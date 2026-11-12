@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import type { EdgeType, GraphEdge, GraphNode } from "@relic/graph-core";
+import type { EdgeType, GraphEdge, GraphNode } from "@dependency-graph/graph-core";
 
 export interface BoundaryRule {
   /** Glob for the importing file, e.g. "src/ui/**". */
@@ -24,7 +24,7 @@ export interface BoundaryViolation {
 }
 
 const DEFAULT_EDGE_TYPES: EdgeType[] = ["IMPORTS"];
-const CONFIG_FILES = [".relicrc.json", "relic.config.json"];
+const CONFIG_FILES = [".dependency-graphrc.json", "dependency-graph.config.json"];
 
 export function loadBoundaryConfig(
   rootPath: string,

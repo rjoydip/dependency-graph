@@ -1,5 +1,5 @@
-name: Relic PR impact
-description: Comment the blast radius and related tests for a pull request using the Relic dependency graph.
+name: Dependency Graph PR impact
+description: Comment the blast radius and related tests for a pull request using the Dependency Graph.
 inputs:
   base:
     description: Base revision to diff against (for example origin/main)
@@ -17,10 +17,10 @@ inputs:
     description: Token with pull-requests write access
     required: false
     default: ${{ github.token }}
-  relic-command:
-    description: Command that invokes the Relic CLI
+  dependency-graph-command:
+    description: Command that invokes the Dependency Graph CLI
     required: false
-    default: bunx --bun relic-graph
+    default: bunx --bun dependency-graph
 
 runs:
   using: composite
@@ -33,11 +33,11 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
-        read -ra relic <<< "${{ inputs.relic-command }}"
+        read -ra cmd_parts <<< "${{ inputs.dependency-graph-command }}"
         args=(pr)
         if [ -n "${{ inputs.base }}" ]; then args+=(--base "${{ inputs.base }}"); fi
         if [ -n "${{ inputs.head }}" ]; then args+=(--head "${{ inputs.head }}"); fi
-        "${relic[@]}" "${args[@]}" > "$RUNNER_TEMP/relic-impact.md"
+        "${cmd_parts[@]}" "${args[@]}" > "$RUNNER_TEMP/dependency-graph-impact.md"
 
     - name: Comment on the pull request
       shell: bash
@@ -48,5 +48,5 @@ runs:
         set -euo pipefail
         pr="${PR_NUMBER:-${{ github.event.pull_request.number }}}"
         if [ -z "$pr" ]; then echo "No pull request number available"; exit 1; fi
-        gh pr comment "$pr" --body-file "$RUNNER_TEMP/relic-impact.md" --edit-last --create-if-none \
-          || gh pr comment "$pr" --body-file "$RUNNER_TEMP/relic-impact.md"
+        gh pr comment "$pr" --body-file "$RUNNER_TEMP/dependency-graph-impact.md" --edit-last --create-if-none \
+          || gh pr comment "$pr" --body-file "$RUNNER_TEMP/dependency-graph-impact.md"

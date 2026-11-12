@@ -33,8 +33,8 @@ beforeEach(async () => {
     cwd: PROJECT_ROOT,
     env: {
       ...process.env,
-      RELIC_DB: join(dbDir, "graph.db"),
-      RELIC_REPOSITORY: fixture.root,
+      DEPENDENCY_GRAPH_DB: join(dbDir, "graph.db"),
+      DEPENDENCY_GRAPH_REPOSITORY: fixture.root,
     } as Record<string, string>,
     stderr: "ignore",
   });
@@ -84,16 +84,16 @@ describe("MCP protocol over stdio", () => {
   });
 
   it(
-    "serves the auto-indexed RELIC_ROOT without an explicit repository arg",
+    "serves the auto-indexed DEPENDENCY_GRAPH_ROOT without an explicit repository arg",
     { timeout: 30_000 },
     async () => {
       const rootDb = tempDir();
       const env = {
         ...process.env,
-        RELIC_DB: join(rootDb, "graph.db"),
-        RELIC_ROOT: fixture.root,
+        DEPENDENCY_GRAPH_DB: join(rootDb, "graph.db"),
+        DEPENDENCY_GRAPH_ROOT: fixture.root,
       } as Record<string, string>;
-      delete env.RELIC_REPOSITORY;
+      delete env.DEPENDENCY_GRAPH_REPOSITORY;
       const rootTransport = new StdioClientTransport({
         command: "bun",
         args: ["run", join(PROJECT_ROOT, "apps", "mcp", "src", "index.ts")],
@@ -185,7 +185,7 @@ describe("MCP protocol over stdio", () => {
       owners: string[];
       blame: unknown;
     };
-    expect(owners.owners).toEqual(["@relic/services"]);
+    expect(owners.owners).toEqual(["@dependency-graph/services"]);
     expect(owners.blame).toBeNull(); // fixture copies are not git repositories
 
     const summary = parse(await call("get_graph_summary")) as { counts: { edges: number } };

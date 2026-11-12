@@ -1,4 +1,4 @@
-import type { GraphEdge, GraphNode } from "@relic/graph-core";
+import type { GraphEdge, GraphNode } from "@dependency-graph/graph-core";
 
 export type ExportFormat = "mermaid" | "dot";
 
@@ -32,7 +32,7 @@ export function toMermaid(nodes: GraphNode[], edges: GraphEdge[]): string {
 /** Graphviz DOT for rendering with dot/Graphviz. */
 export function toDot(nodes: GraphNode[], edges: GraphEdge[]): string {
   const ids = new Map(nodes.map((node, index) => [node.id, `n${index}`]));
-  const lines = ["digraph relic {", "  rankdir=LR;"];
+  const lines = ["digraph \"dependency-graph\" {", "  rankdir=LR;"];
   for (const node of nodes) {
     lines.push(`  ${ids.get(node.id)} [label="${dotLabel(node)}"];`);
   }

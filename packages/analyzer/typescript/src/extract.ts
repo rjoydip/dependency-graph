@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, normalize } from "node:path";
-import type { Diagnostic, GraphNode, NodeType } from "@relic/graph-core";
-import type { RepositoryContext } from "@relic/analyzer-core";
+import type { Diagnostic, GraphNode, NodeType } from "@dependency-graph/graph-core";
+import type { RepositoryContext } from "@dependency-graph/analyzer-core";
 import {
   IGNORED_DIRS,
   SUPPORTED_EXTENSIONS,
@@ -18,7 +18,7 @@ import {
   type PendingMessage,
   type PendingSql,
   type RefInfo,
-} from "@relic/analyzer-core";
+} from "@dependency-graph/analyzer-core";
 import {
   apiOperationId,
   databaseTableId,
@@ -29,7 +29,7 @@ import {
   symbolId,
   testNodeId,
   fileId,
-} from "@relic/analyzer-core";
+} from "@dependency-graph/analyzer-core";
 import * as ts from "typescript";
 
 export const ROUTE_METHODS = new Set(["get", "post", "put", "patch", "delete", "head", "options"]);

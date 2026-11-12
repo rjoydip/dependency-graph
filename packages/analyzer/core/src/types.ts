@@ -1,4 +1,4 @@
-import type { Diagnostic, GraphNode } from "@relic/graph-core";
+import type { Diagnostic, GraphNode } from "@dependency-graph/graph-core";
 
 export interface Declaration {
   id: string;

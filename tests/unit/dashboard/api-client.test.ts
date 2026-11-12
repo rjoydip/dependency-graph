@@ -77,7 +77,7 @@ test("indexSource posts the source body", async () => {
 });
 
 test("snapshot endpoints encode the repository and delete with DELETE", async () => {
-  mockFetch(() => Response.json({ format: "relic-snapshot", version: 1 }));
+  mockFetch(() => Response.json({ format: "dependency-graph-snapshot", version: 1 }));
   await api.snapshot("r 1");
   expect(calls[0]?.url).toBe("/api/repositories/r%201/snapshot");
 
@@ -89,7 +89,7 @@ test("snapshot endpoints encode the repository and delete with DELETE", async ()
 test("importSnapshot posts the snapshot body", async () => {
   mockFetch(() => Response.json({ repositoryId: "r", nodeCount: 0, edgeCount: 0 }));
   const snapshot = {
-    format: "relic-snapshot" as const,
+    format: "dependency-graph-snapshot" as const,
     version: 1 as const,
     repository: {
       name: "r",

@@ -9,7 +9,7 @@ import type {
 } from "./domain";
 
 /** Storage contract for graph data. The graph core never depends on a
- * concrete database driver; SQLite/DB0 specifics live in @relic/database. */
+ * concrete database driver; SQLite/DB0 specifics live in @dependency-graph/database. */
 export interface GraphRepository {
   upsertRepository(meta: RepositoryMeta): void;
   getRepository(id: string): RepositoryMeta | null;

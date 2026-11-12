@@ -11,14 +11,14 @@ import * as Effect from "effect/Effect";
  * filesystem access, so it stays a local-first process. See docs/index.md.
  */
 export default Alchemy.Stack(
-  "Relic",
+  "dependency-graph",
   {
     providers: Cloudflare.providers(),
     state: Cloudflare.state(),
   },
   Effect.gen(function* () {
     const site = yield* Cloudflare.Worker("Site", {
-      name: "relic",
+      name: "dependency-graph",
       assets: { directory: "./apps/dashboard/dist" },
     });
     return { url: site.url };

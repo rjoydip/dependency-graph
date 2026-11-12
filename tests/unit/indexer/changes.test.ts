@@ -3,8 +3,8 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
-import type { GraphNode } from "@relic/graph-core";
-import { changedRanges, symbolsForRanges } from "@relic/indexer";
+import type { GraphNode } from "@dependency-graph/graph-core";
+import { changedRanges, symbolsForRanges } from "@dependency-graph/indexer";
 
 const node = (id: string, name: string, startLine: number, endLine: number): GraphNode => ({
   id,
@@ -27,7 +27,7 @@ describe("git diff ranges", () => {
   let root: string;
 
   beforeEach(() => {
-    root = mkdtempSync(join(tmpdir(), "relic-changes-"));
+    root = mkdtempSync(join(tmpdir(), "dependency-graph-changes-"));
     git(root, "init");
     git(root, "config", "user.email", "test@example.com");
     git(root, "config", "user.name", "Test");
@@ -50,7 +50,7 @@ describe("git diff ranges", () => {
   });
 
   it("throws a GraphError outside a git repository", () => {
-    const outside = mkdtempSync(join(tmpdir(), "relic-no-git-"));
+    const outside = mkdtempSync(join(tmpdir(), "dependency-graph-no-git-"));
     try {
       expect(() => changedRanges(outside)).toThrow("git diff failed");
     } finally {

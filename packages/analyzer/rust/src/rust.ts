@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { extractSimpleFile, type RepositoryContext } from "@relic/analyzer-core";
+import { extractSimpleFile, type RepositoryContext } from "@dependency-graph/analyzer-core";
 
 const RUST_KEYWORDS = new Set([
   "if",

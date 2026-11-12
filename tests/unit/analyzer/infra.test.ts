@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "bun:test";
 import { cleanup, tempDir } from "../../helpers";
-import { openGraph, repositoryIdFor, type OpenGraph } from "@relic/indexer";
+import { openGraph, repositoryIdFor, type OpenGraph } from "@dependency-graph/indexer";
 
 const root = join(import.meta.dir, "..", "..", "fixtures", "infra", "repo");
 let graph: OpenGraph | null = null;
@@ -45,13 +45,13 @@ describe("infrastructure graph extraction", () => {
       .sort();
     expect(services).toContain("api");
     expect(services).toContain("db");
-    expect(services).toContain("relic/api:latest");
+    expect(services).toContain("dependency-graph/api:latest");
 
     const deployments = graph.repository
       .listNodes({ repositoryId: repo, type: "deployment", limit: 50 })
       .map((n) => n.name)
       .sort();
-    expect(deployments).toContain("relic-api");
+    expect(deployments).toContain("dependency-graph-api");
     expect(deployments).toContain("root");
 
     const depends = graph.repository.getEdges({

@@ -1,7 +1,7 @@
 {
-  "name": "relic-graph",
+  "name": "dependency-graph",
   "version": "0.1.0",
-  "description": "Relic — codebase dependency graph: MCP server, incremental multi-language indexer, and visual dashboard",
+  "description": "Dependency Graph — codebase dependency graph: MCP server, incremental multi-language indexer, and visual dashboard",
   "keywords": [
     "code-graph",
     "dependency-graph",
@@ -10,8 +10,8 @@
     "typescript"
   ],
   "bin": {
-    "relic": "./dist/cli.js",
-    "relic-mcp": "./dist/index.js"
+    "dependency-graph": "./dist/cli.js",
+    "dependency-graph-mcp": "./dist/index.js"
   },
   "files": [
     "dist"
@@ -29,10 +29,10 @@
     "zod": "^4.6.6"
   },
   "devDependencies": {
-    "@relic/analyzer-typescript": "workspace:*",
-    "@relic/graph-core": "workspace:*",
-    "@relic/indexer": "workspace:*",
-    "@relic/mcp-server": "workspace:*"
+    "@dependency-graph/analyzer-typescript": "workspace:*",
+    "@dependency-graph/graph-core": "workspace:*",
+    "@dependency-graph/indexer": "workspace:*",
+    "@dependency-graph/mcp-server": "workspace:*"
   },
   "engines": {
     "node": ">=23.4.0"

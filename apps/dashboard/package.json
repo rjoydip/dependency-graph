@@ -1,5 +1,5 @@
 {
-  "name": "@relic/dashboard",
+  "name": "@dependency-graph/dashboard",
   "version": "0.1.0",
   "private": true,
   "type": "module",

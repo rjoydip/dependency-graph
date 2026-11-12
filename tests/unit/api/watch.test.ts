@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "bun:test";
-import type { RelicApp } from "../../../apps/api/src/app";
+import type { DependencyGraphApp } from "../../../apps/api/src/app";
 import { shouldIgnoreWatchPath, startWatcher } from "../../../apps/api/src/watch";
 
 describe("watch path filter", () => {
@@ -14,9 +14,9 @@ describe("watch path filter", () => {
       "coverage/lcov.info",
       ".next/cache/x",
       "test-results/x",
-      "relic.db",
-      "relic.db-wal",
-      "relic.db-shm",
+      "dependency-graph.db",
+      "dependency-graph.db-wal",
+      "dependency-graph.db-shm",
     ]) {
       expect(shouldIgnoreWatchPath(path)).toBe(true);
     }
@@ -31,7 +31,7 @@ describe("watch path filter", () => {
 
 describe("watch re-indexing", () => {
   it("re-indexes source changes and emits graph-updated", async () => {
-    const root = mkdtempSync(join(tmpdir(), "relic-watch-"));
+    const root = mkdtempSync(join(tmpdir(), "dependency-graph-watch-"));
     const events: unknown[] = [];
     let runs = 0;
     const app = {
@@ -51,7 +51,7 @@ describe("watch re-indexing", () => {
       events: {
         emit: (_name: string, payload: unknown) => events.push(payload),
       },
-    } as unknown as RelicApp;
+    } as unknown as DependencyGraphApp;
 
     const stop = startWatcher(app, root, 10);
     try {

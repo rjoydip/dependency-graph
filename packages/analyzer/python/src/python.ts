@@ -1,8 +1,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, normalize } from "node:path";
-import type { Diagnostic, GraphNode, NodeType } from "@relic/graph-core";
-import type { RepositoryContext } from "@relic/analyzer-core";
-import { isTestFile, sha1 } from "@relic/analyzer-core";
+import type { Diagnostic, GraphNode, NodeType } from "@dependency-graph/graph-core";
+import type { RepositoryContext } from "@dependency-graph/analyzer-core";
+import { isTestFile, sha1 } from "@dependency-graph/analyzer-core";
 import {
   databaseTableId,
   fileId,
@@ -11,7 +11,7 @@ import {
   routeId,
   symbolId,
   testNodeId,
-} from "@relic/analyzer-core";
+} from "@dependency-graph/analyzer-core";
 import type {
   Declaration,
   ExtractedFile,
@@ -21,7 +21,7 @@ import type {
   PendingMessage,
   PendingSql,
   RefInfo,
-} from "@relic/analyzer-core";
+} from "@dependency-graph/analyzer-core";
 
 const PY_KEYWORDS = new Set([
   "if",

@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "bun:test";
-import { openGraph, type OpenGraph } from "@relic/indexer";
+import { openGraph, type OpenGraph } from "@dependency-graph/indexer";
 import { cleanup, tempDir } from "../../helpers";
 
 const fixtures = join(import.meta.dir, "..", "..", "fixtures");

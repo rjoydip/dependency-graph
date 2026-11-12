@@ -1,2 +1,2 @@
-export * from "@relic/analyzer-core";
+export * from "@dependency-graph/analyzer-core";
 export * from "./extract";

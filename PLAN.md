@@ -1,10 +1,10 @@
-# Relic — Plan
+# Dependency Graph — Plan
 
 **Status:** 2026-11-06. First release, roadmap items 19.0–19.5 are complete.
 
 ## Product
 
-Relic is a static dependency-graph engine for TypeScript/JavaScript, Python,
+Dependency Graph is a static dependency-graph engine for TypeScript/JavaScript, Python,
 Rust, Java and Go repositories, plus the service/deployment manifests around
 them. It indexes symbols, files, routes, tests, SQL tables, queues, services,
 deployments, and their relationships, then exposes the same graph through:
@@ -12,7 +12,7 @@ deployments, and their relationships, then exposes the same graph through:
 - an MCP stdio server for coding agents,
 - a local Hono HTTP API,
 - a React Flow dashboard,
-- a `relic` CLI for indexing, CI, export, runtime evidence, and PR reports.
+- a `dependency-graph` CLI for indexing, CI, export, runtime evidence, and PR reports.
 
 The promise is evidence, not guesses: every edge carries a source `file:line`,
 a confidence (`static` 1.0 / `runtime` 0.9 / `inferred` 0.6), and a note when the
@@ -33,7 +33,7 @@ never invented edges.
 | `packages/analyzer/go`         | Go analyzer                                                                                   |
 | `packages/indexer`             | Incremental indexing, change detection, owner metadata, git-diff helpers                      |
 | `apps/mcp`                     | MCP tools, resources, prompts over stdio                                                      |
-| `apps/api`                     | Hono API, publishable `relic` / `relic-mcp` package, CLI, dashboard host                      |
+| `apps/api`                     | Hono API, publishable `dependency-graph` / `dependency-graph-mcp` package, CLI, dashboard host                      |
 | `apps/dashboard`               | React + React Flow explorer                                                                   |
 
 **Data flow:** walk repository → extract per file → resolve cross-file edges →
@@ -69,7 +69,7 @@ bun run test:e2e
 - [x] Identifies relevant tests and returns source locations.
 - [x] Exposes validated MCP tools, resources, and prompts over stdio.
 - [x] Ships a dashboard with search, filters, inspection, impact, cycles, owners, and diagnostics.
-- [x] Provides a `relic` CLI for index/serve/watch/impact/export/check/init/pr/diff.
+- [x] Provides a `dependency-graph` CLI for index/serve/watch/impact/export/check/init/pr/diff.
 - [x] Handles deletion, renames, and incremental re-indexing.
 - [x] Documents setup, security limits, and the agent skill.
 
@@ -91,14 +91,14 @@ NestJS decorators, Express/Fastify, and tRPC.
 
 Cycle detection (`find_cycles`, dashboard highlight), opt-in dead-code query,
 coupling metrics (fan-in/fan-out/instability), deterministic impact risk score
-with factor breakdown, snapshot diff (`relic diff --check`), and CODEOWNERS +
+with factor breakdown, snapshot diff (`dependency-graph diff --check`), and CODEOWNERS +
 git-blame ownership (`get_owners`).
 
 ### 19.3 — Automation and distribution
 
-`relic --watch` with incremental re-indexing and SSE updates; `relic check`
-boundary rules; `relic impact`; `relic export` (Mermaid/DOT); `relic init`
-(idempotent MCP config + skill); `relic pr` and the `.github/actions/relic-pr`
+`dependency-graph --watch` with incremental re-indexing and SSE updates; `dependency-graph check`
+boundary rules; `dependency-graph impact`; `dependency-graph export` (Mermaid/DOT); `dependency-graph init`
+(idempotent MCP config + skill); `dependency-graph pr` and the `.github/actions/dependency-graph-pr`
 composite action for PR comments. Branch switches still require an explicit
 re-index.
 
@@ -113,7 +113,7 @@ re-index.
 - **Runtime evidence** ingest from lcov or OTLP JSON. `CALLS`/`TESTS` edges are
   upgraded to `runtime` confidence; static conflicts become `runtime-conflict`
   diagnostics and are never overwritten. Available through the API, MCP, and
-  `relic runtime`.
+  `dependency-graph runtime`.
 - **Cross-repo / monorepo graph**: workspace sibling imports resolve to nodes in
   another indexed repository, and the database validates edges against all known
   nodes so impact traverses repository boundaries.
@@ -141,4 +141,4 @@ re-index.
 
 - `docs/index.md` — usage, HTTP API, graph model, indexing semantics, security limits.
 - `README.md` — install, MCP config, CLI quickstart, deployment.
-- `skills/relic/SKILL.md` — agent query order and reporting rules.
+- `skills/dependency-graph/SKILL.md` — agent query order and reporting rules.

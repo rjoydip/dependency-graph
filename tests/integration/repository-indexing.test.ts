@@ -1,8 +1,8 @@
 import { appendFileSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
-import type { GraphNode } from "@relic/graph-core";
-import { openGraph, repositoryIdFor, type OpenGraph } from "@relic/indexer";
+import type { GraphNode } from "@dependency-graph/graph-core";
+import { openGraph, repositoryIdFor, type OpenGraph } from "@dependency-graph/indexer";
 import { copyFixture, cleanup, tempDir, ANALYZER_FIXTURES } from "../helpers";
 
 let fixture: { root: string; cleanup: () => void };
@@ -46,7 +46,7 @@ describe("repository indexing — critical fixture scenario", () => {
       .searchSymbols(repoId, "UserService.updateUser")
       .find((n) => n.qualifiedName === "UserService.updateUser")!;
     expect(target).toBeDefined();
-    expect(target.metadata.owners).toEqual(["@relic/services"]);
+    expect(target.metadata.owners).toEqual(["@dependency-graph/services"]);
 
     const impact = graph.graph.analyzeImpact(repoId, target.id, {
       maxDepth: 5,

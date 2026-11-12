@@ -1,5 +1,5 @@
 {
-  "name": "@relic/docs",
+  "name": "@dependency-graph/docs",
   "private": true,
   "type": "module",
   "scripts": {

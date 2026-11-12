@@ -90,7 +90,7 @@ export interface CycleReportDto {
 
 /** Portable graph export — the header download and the index-screen upload. */
 export interface Snapshot {
-  format: "relic-snapshot";
+  format: "dependency-graph-snapshot";
   version: 1;
   repository: {
     name: string;
@@ -121,8 +121,8 @@ export interface IndexStatusDto {
 }
 
 // Static deployments (Cloudflare) have no API of their own; point the build at
-// a separately hosted Relic API with VITE_RELIC_API_URL (e.g. https://api.example.com).
-const API_ORIGIN = (import.meta.env.VITE_RELIC_API_URL ?? "").replace(/\/$/, "");
+// a separately hosted Dependency Graph API with VITE_DEPENDENCY_GRAPH_API_URL (e.g. https://api.example.com).
+const API_ORIGIN = (import.meta.env.VITE_DEPENDENCY_GRAPH_API_URL ?? "").replace(/\/$/, "");
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_ORIGIN}/api${path}`, init);

@@ -7,8 +7,8 @@ import type {
   RepositoryMeta,
   TraversalRequest,
   TraversalStep,
-} from "@relic/graph-core";
-import type { GraphRepository } from "@relic/graph-core";
+} from "@dependency-graph/graph-core";
+import type { GraphRepository } from "@dependency-graph/graph-core";
 import type { DatabaseClient } from "./client";
 
 type SqlParam = string | number | null;

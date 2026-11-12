@@ -1,5 +1,5 @@
 {
-  "name": "@relic/analyzer-typescript",
+  "name": "@dependency-graph/analyzer-typescript",
   "version": "0.1.0",
   "type": "module",
   "main": "src/index.ts",
@@ -7,8 +7,8 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@relic/analyzer-core": "workspace:*",
-    "@relic/graph-core": "workspace:*",
+    "@dependency-graph/analyzer-core": "workspace:*",
+    "@dependency-graph/graph-core": "workspace:*",
     "typescript": "^5.9.2"
   }
 }

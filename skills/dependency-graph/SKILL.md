@@ -1,9 +1,9 @@
 ---
-name: relic
-description: Query the Relic dependency graph before changing code. Use when asked what depends on a symbol, what breaks if X changes, which tests cover X, how two files/routes/tables connect, or to review a git diff. Requires the "relic" MCP server.
+name: dependency-graph
+description: Query the Dependency Graph before changing code. Use when asked what depends on a symbol, what breaks if X changes, which tests cover X, how two files/routes/tables connect, or to review a git diff. Requires the "dependency-graph" MCP server.
 ---
 
-# Relic graph
+# Dependency Graph
 
 Facts over guesses. Prefer graph answers to grep/read; never invent relationships.
 
@@ -41,7 +41,7 @@ Facts over guesses. Prefer graph answers to grep/read; never invent relationship
 ## Reporting rules
 
 - Pass `repository` (absolute path) unless the server auto-indexes your project
-  via `RELIC_ROOT` / `RELIC_REPOSITORY`.
+  via `DEPENDENCY_GRAPH_ROOT` / `DEPENDENCY_GRAPH_REPOSITORY`.
 - Every edge carries `confidence` and `evidence`. Static (1.0) is a fact;
   inferred (0.6) is a convention-based guess — label it as such.
 - Cite `evidence.file:line`. If evidence is missing, say "inferred".

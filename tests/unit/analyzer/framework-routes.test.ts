@@ -7,7 +7,7 @@ import {
   walkRepository,
   type RefInfo,
   type RefLookup,
-} from "@relic/analyzer-typescript";
+} from "@dependency-graph/analyzer-typescript";
 import { ANALYZER_FIXTURES } from "../../helpers";
 
 const repo = makeRepositoryContext(join(ANALYZER_FIXTURES, "typescript", "frameworks"));

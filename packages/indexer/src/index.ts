@@ -1,9 +1,9 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import type { Diagnostic, GraphRepository, RepositoryMeta } from "@relic/graph-core";
-import { GraphService } from "@relic/graph-core";
-import { DatabaseClient, SqliteGraphRepository, type ReplaceGraphInput } from "@relic/database";
+import type { Diagnostic, GraphRepository, RepositoryMeta } from "@dependency-graph/graph-core";
+import { GraphService } from "@dependency-graph/graph-core";
+import { DatabaseClient, SqliteGraphRepository, type ReplaceGraphInput } from "@dependency-graph/database";
 import {
   extractManifest,
   fileId,
@@ -18,12 +18,12 @@ import {
   type ManifestGraph,
   type RefInfo,
   type RefLookup,
-} from "@relic/analyzer-typescript";
-import { extractFile } from "@relic/analyzer-typescript";
-import { extractPythonFile } from "@relic/analyzer-python";
-import { extractRustFile } from "@relic/analyzer-rust";
-import { extractJavaFile } from "@relic/analyzer-java";
-import { extractGoFile } from "@relic/analyzer-go";
+} from "@dependency-graph/analyzer-typescript";
+import { extractFile } from "@dependency-graph/analyzer-typescript";
+import { extractPythonFile } from "@dependency-graph/analyzer-python";
+import { extractRustFile } from "@dependency-graph/analyzer-rust";
+import { extractJavaFile } from "@dependency-graph/analyzer-java";
+import { extractGoFile } from "@dependency-graph/analyzer-go";
 
 /** Language dispatch: every analyzer emits the shared ExtractedFile contract. */
 function extractSourceFile(
@@ -344,7 +344,7 @@ export function openGraph(dbPath: string): OpenGraph {
   };
 }
 
-export { makeRepositoryContext, repositoryIdFor } from "@relic/analyzer-typescript";
-export type { GraphRepository, NodeFilter } from "@relic/graph-core";
+export { makeRepositoryContext, repositoryIdFor } from "@dependency-graph/analyzer-typescript";
+export type { GraphRepository, NodeFilter } from "@dependency-graph/graph-core";
 export * from "./changes";
 export * from "./runtime";

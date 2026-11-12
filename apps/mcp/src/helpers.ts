@@ -1,9 +1,9 @@
 import { readFileSync } from "node:fs";
 import { isAbsolute, join, relative, resolve } from "node:path";
-import type { GraphNode, NodeType } from "@relic/graph-core";
-import { GraphError } from "@relic/graph-core";
-import { repositoryIdFor } from "@relic/analyzer-typescript";
-import { changedRanges, symbolsForRanges, type ChangedRange } from "@relic/indexer";
+import type { GraphNode, NodeType } from "@dependency-graph/graph-core";
+import { GraphError } from "@dependency-graph/graph-core";
+import { repositoryIdFor } from "@dependency-graph/analyzer-typescript";
+import { changedRanges, symbolsForRanges, type ChangedRange } from "@dependency-graph/indexer";
 
 export { changedRanges, symbolsForRanges };
 export type { ChangedRange };

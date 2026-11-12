@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
-import { openGraph, repositoryIdFor, type OpenGraph } from "@relic/indexer";
+import { openGraph, repositoryIdFor, type OpenGraph } from "@dependency-graph/indexer";
 import { cleanup, copyFixture, tempDir } from "../../helpers";
 
 let fixture: { root: string; cleanup: () => void };

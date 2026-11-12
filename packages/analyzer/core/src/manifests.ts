@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
-import type { EdgeType, Evidence, GraphEdge, GraphNode } from "@relic/graph-core";
-import { CONFIDENCE } from "@relic/graph-core";
+import type { EdgeType, Evidence, GraphEdge, GraphNode } from "@dependency-graph/graph-core";
+import { CONFIDENCE } from "@dependency-graph/graph-core";
 import { IGNORED_DIRS, extOf, sha1 } from "./discovery";
 import type { RepositoryContext } from "./discovery";
 import { deploymentId, edgeId, fileId, repositoryNodeId, serviceId } from "./ids";

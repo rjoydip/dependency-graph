@@ -1,5 +1,5 @@
 {
-  "name": "@relic/indexer",
+  "name": "@dependency-graph/indexer",
   "version": "0.1.0",
   "type": "module",
   "main": "src/index.ts",
@@ -7,13 +7,13 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@relic/analyzer-core": "workspace:*",
-    "@relic/analyzer-go": "workspace:*",
-    "@relic/analyzer-java": "workspace:*",
-    "@relic/analyzer-python": "workspace:*",
-    "@relic/analyzer-rust": "workspace:*",
-    "@relic/analyzer-typescript": "workspace:*",
-    "@relic/database": "workspace:*",
-    "@relic/graph-core": "workspace:*"
+    "@dependency-graph/analyzer-core": "workspace:*",
+    "@dependency-graph/analyzer-go": "workspace:*",
+    "@dependency-graph/analyzer-java": "workspace:*",
+    "@dependency-graph/analyzer-python": "workspace:*",
+    "@dependency-graph/analyzer-rust": "workspace:*",
+    "@dependency-graph/analyzer-typescript": "workspace:*",
+    "@dependency-graph/database": "workspace:*",
+    "@dependency-graph/graph-core": "workspace:*"
   }
 }

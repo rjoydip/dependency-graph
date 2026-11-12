@@ -1,5 +1,5 @@
-import type { Evidence, GraphNode, GraphRepository, GraphService } from "@relic/graph-core";
-import { changedRanges, symbolsForRanges, type ChangedRange } from "@relic/indexer";
+import type { Evidence, GraphNode, GraphRepository, GraphService } from "@dependency-graph/graph-core";
+import { changedRanges, symbolsForRanges, type ChangedRange } from "@dependency-graph/indexer";
 
 export interface PrAffectedRow {
   node: GraphNode;
@@ -104,7 +104,7 @@ const MAX_ROWS = 50;
 
 /** Markdown suitable for a PR comment; never includes source text. */
 export function formatPrImpact(report: PrImpact): string {
-  const lines = ["## Relic impact", ""];
+  const lines = ["## Dependency Graph impact", ""];
   lines.push(
     `**Risk:** ${report.risk}/100 · **Changed symbols:** ${report.changedSymbols.length} · ` +
       `**Affected nodes:** ${report.affected.length} · **Related tests:** ${report.tests.length}`,

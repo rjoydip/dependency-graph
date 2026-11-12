@@ -1,8 +1,8 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { GraphNode, GraphService, Indexer, SqliteGraphRepository } from "./deps";
-import { GraphError } from "@relic/graph-core";
-import { blameRange, loadCodeowners, ownersFor } from "@relic/analyzer-typescript";
-import { ingestRuntime } from "@relic/indexer";
+import { GraphError } from "@dependency-graph/graph-core";
+import { blameRange, loadCodeowners, ownersFor } from "@dependency-graph/analyzer-typescript";
+import { ingestRuntime } from "@dependency-graph/indexer";
 import {
   changedRanges,
   coerceNodeType,
@@ -38,7 +38,7 @@ export function registerTools(server: McpServer, deps: ToolDeps): void {
   const { graph, indexer, repository } = deps;
 
   const repoId = (input?: string): string => {
-    const path = input ?? process.env.RELIC_ROOT ?? process.env.RELIC_REPOSITORY ?? process.cwd();
+    const path = input ?? process.env.DEPENDENCY_GRAPH_ROOT ?? process.env.DEPENDENCY_GRAPH_REPOSITORY ?? process.cwd();
     const id = coerceRepositoryId(
       path,
       (candidate) => repository.getRepository(candidate) !== null,
@@ -94,7 +94,7 @@ export function registerTools(server: McpServer, deps: ToolDeps): void {
         repository: z
           .string()
           .optional()
-          .describe("Path to the repository root (defaults to RELIC_REPOSITORY)"),
+          .describe("Path to the repository root (defaults to DEPENDENCY_GRAPH_REPOSITORY)"),
         revision: z
           .string()
           .optional()
@@ -103,9 +103,9 @@ export function registerTools(server: McpServer, deps: ToolDeps): void {
     },
     async ({ repository: path, revision }) =>
       run(() => {
-        const root = path ?? process.env.RELIC_REPOSITORY;
+        const root = path ?? process.env.DEPENDENCY_GRAPH_REPOSITORY;
         if (!root)
-          throw new GraphError("INVALID_INPUT", "repository is required (or set RELIC_REPOSITORY)");
+          throw new GraphError("INVALID_INPUT", "repository is required (or set DEPENDENCY_GRAPH_REPOSITORY)");
         return indexer.index(root, revision !== undefined ? { revision } : {});
       }),
   );

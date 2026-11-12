@@ -6,8 +6,8 @@ import {
   walkRepository,
   type RefInfo,
   type RefLookup,
-} from "@relic/analyzer-core";
-import { extractPythonFile } from "@relic/analyzer-python";
+} from "@dependency-graph/analyzer-core";
+import { extractPythonFile } from "@dependency-graph/analyzer-python";
 import { ANALYZER_FIXTURES } from "../../helpers";
 
 const root = join(ANALYZER_FIXTURES, "python", "python-service");

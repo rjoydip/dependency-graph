@@ -4,7 +4,7 @@ import {
   resolveImport,
   toRepoRelative,
   walkRepository,
-} from "@relic/analyzer-typescript";
+} from "@dependency-graph/analyzer-typescript";
 import { FIXTURE_ROOT } from "../helpers";
 
 const repo = makeRepositoryContext(FIXTURE_ROOT);

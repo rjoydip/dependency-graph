@@ -1,1 +1,1 @@
-export const config = { name: "relic" };
+export const config = { name: "dependency-graph" };
