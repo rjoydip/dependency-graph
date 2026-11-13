@@ -4,19 +4,22 @@ import { join } from "node:path";
 import { describe, expect, it } from "bun:test";
 import { initProject } from "../../../apps/api/src/init";
 
-const tempRoot = () => mkdtempSync(join(tmpdir(), "relic-init-"));
+const tempRoot = () => mkdtempSync(join(tmpdir(), "dependency-graph-init-"));
 
-describe("relic init", () => {
+describe("dependency-graph init", () => {
   it("writes an MCP config and a skill idempotently", () => {
     const root = tempRoot();
     try {
       const first = initProject(root);
       const config = JSON.parse(readFileSync(first.mcpConfig, "utf8")) as {
-        mcpServers: Record<string, { command: string; env: { RELIC_REPOSITORY: string } }>;
+        mcpServers: Record<
+          string,
+          { command: string; env: { DEPENDENCY_GRAPH_REPOSITORY: string } }
+        >;
       };
-      expect(config.mcpServers.relic?.command).toBe("npx");
-      expect(config.mcpServers.relic?.env.RELIC_REPOSITORY).toBe(root);
-      expect(readFileSync(first.skill, "utf8")).toContain("Relic graph");
+      expect(config.mcpServers["dependency-graph"]?.command).toBe("npx");
+      expect(config.mcpServers["dependency-graph"]?.env.DEPENDENCY_GRAPH_REPOSITORY).toBe(root);
+      expect(readFileSync(first.skill, "utf8")).toContain("Dependency Graph");
 
       const second = initProject(root);
       expect(second.changed).toBe(false);
@@ -37,7 +40,7 @@ describe("relic init", () => {
         mcpServers: Record<string, unknown>;
       };
       expect(config.mcpServers.other).toEqual({ command: "other" });
-      expect(config.mcpServers.relic).toBeDefined();
+      expect(config.mcpServers["dependency-graph"]).toBeDefined();
 
       writeFileSync(first.skill, "custom skill");
       initProject(root);

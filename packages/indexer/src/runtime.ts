@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { isAbsolute, resolve } from "node:path";
-import type { Diagnostic, GraphEdge, GraphRepository } from "@relic/graph-core";
-import { CONFIDENCE } from "@relic/graph-core";
+import type { Diagnostic, GraphEdge, GraphRepository } from "@dependency-graph/graph-core";
+import { CONFIDENCE } from "@dependency-graph/graph-core";
 
 export interface RuntimeObservation {
   file: string;

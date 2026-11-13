@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="docs/public/logo.svg" alt="Relic" width="128" height="128" />
+  <img src="docs/public/logo.svg" alt="Dependency Graph" width="128" height="128" />
 </p>
 
-# Relic
+# Dependency Graph
 
 Static dependency-graph engine for TypeScript/JavaScript, Python, Rust, Java and Go repositories, exposed three ways: an MCP server (for coding agents), a Hono HTTP API, and a React Flow dashboard. It also ingests docker-compose, Dockerfile and Kubernetes manifests and runtime coverage evidence.
 
@@ -24,7 +24,7 @@ packages/
   indexer/                incremental indexing (hash change detection, importer re-expansion), runtime evidence
 apps/
   mcp/                    MCP stdio server: 15 tools, 3 resources, 2 prompts
-  api/                    Hono API + the publishable package: `relic` CLI and `relic-mcp` bins
+  api/                    Hono API + the publishable package: `dependency-graph` CLI and `dependency-graph-mcp` bins
   dashboard/              React + React Flow graph explorer
 tests/
   fixtures/analyzer/typescript/  deterministic fixture (critical scenario: UserController → UserService.updateUser → UserRepository.update)
@@ -49,13 +49,13 @@ bun run ci          # format:check && lint && typecheck && test:coverage && buil
 The published package ships both binaries and the prebuilt dashboard; it needs Node ≥ 23.4 (`node:sqlite`) or bun:
 
 ```sh
-npm install -g relic-graph   # provides `relic` and `relic-mcp`
-# or run ad hoc: npx relic-graph
+npm install -g dependency-graph   # provides `dependency-graph` and `dependency-graph-mcp`
+# or run ad hoc: npx dependency-graph
 ```
 
 ## MCP server (stdio)
 
-On startup the server auto-indexes `RELIC_ROOT` (or `RELIC_REPOSITORY`, or the launch directory), so tools answer immediately; `index_repository` stays available for other projects.
+On startup the server auto-indexes `DEPENDENCY_GRAPH_ROOT` (or `DEPENDENCY_GRAPH_REPOSITORY`, or the launch directory), so tools answer immediately; `index_repository` stays available for other projects.
 
 Tools: `index_repository`, `search_symbols`, `search_semantic`, `get_symbol_details`, `find_dependents`, `find_dependencies`, `find_cycles`, `find_dead_code`, `get_owners`, `analyze_impact`, `get_dependency_path`, `find_related_tests`, `analyze_git_diff`, `ingest_runtime`, `get_graph_summary`.
 
@@ -64,32 +64,32 @@ Example client config (Claude Code / Cursor / Cline / Windsurf all use the same 
 ```json
 {
   "mcpServers": {
-    "relic": {
+    "dependency-graph": {
       "command": "npx",
-      "args": ["-y", "relic-graph"],
-      "env": { "RELIC_REPOSITORY": "/absolute/path/to/your/repo" }
+      "args": ["-y", "dependency-graph"],
+      "env": { "DEPENDENCY_GRAPH_REPOSITORY": "/absolute/path/to/your/repo" }
     }
   }
 }
 ```
 
-Optional env: `RELIC_ROOT` (project to auto-index at startup), `RELIC_DB` (graph SQLite path, default `$TMPDIR/relic.db`).
+Optional env: `DEPENDENCY_GRAPH_ROOT` (project to auto-index at startup), `DEPENDENCY_GRAPH_DB` (graph SQLite path, default `$TMPDIR/dependency-graph.db`).
 
-An agent skill lives in `skills/relic/SKILL.md`; it teaches LLM clients the query order and how to read confidence and evidence.
+An agent skill lives in `skills/dependency-graph/SKILL.md`; it teaches LLM clients the query order and how to read confidence and evidence.
 
 ### Install the skill
 
 Use the [skills](https://www.skills.sh/) CLI to install it into your agent:
 
 ```sh
-npx skills add rjoydip/relic            # from GitHub
+npx skills add rjoydip/dependency-graph            # from GitHub
 npx skills add .                       # or from this checkout
 npx skills add . -g -a claude-code -y  # global, non-interactive
 ```
 
 `npx skills list` shows what is installed. See the [skills docs](https://www.skills.sh/docs) for supported agents and options.
 
-`relic init` does the same setup non-interactively: it merges `.mcp.json` (pointing at this repository) and writes `skills/relic/SKILL.md`. Re-running it is a no-op; `--force` replaces a modified skill.
+`dependency-graph init` does the same setup non-interactively: it merges `.mcp.json` (pointing at this repository) and writes `skills/dependency-graph/SKILL.md`. Re-running it is a no-op; `--force` replaces a modified skill.
 
 Ask things like:
 
@@ -100,32 +100,32 @@ Ask things like:
 ## Dashboard
 
 ```sh
-relic                          # index cwd, serve API + UI, open the browser
-relic /path/to/repo            # index a specific project
-relic --port 9000 --no-open    # options: --port, --db, --no-open, --watch
-relic index /path/to/repo      # one-shot for agents/scripts: index, print
+dependency-graph                          # index cwd, serve API + UI, open the browser
+dependency-graph /path/to/repo            # index a specific project
+dependency-graph --port 9000 --no-open    # options: --port, --db, --no-open, --watch
+dependency-graph index /path/to/repo      # one-shot for agents/scripts: index, print
                                # IndexResult JSON on stdout, exit non-zero on
                                # failure (logs go to stderr)
 ```
 
 `--watch` re-indexes incrementally on file changes and pushes `graph-updated`
 events over SSE (`/api/events`), so open dashboards refresh without a reload.
-Branch switches are not detected as a single event — run `relic index` (or
-restart `relic`) after a checkout.
+Branch switches are not detected as a single event — run `dependency-graph index` (or
+restart `dependency-graph`) after a checkout.
 
 ### Impact, export, check, init, PR reports
 
 ```sh
-relic impact UserService.updateUser --json       # blast radius + risk score
-relic export --format mermaid > graph.mmd        # mermaid | dot
-relic check                                      # boundary rules, exit 1 on violation
-relic init                                       # .mcp.json + skills/relic/SKILL.md
-relic pr --base origin/main --head HEAD          # Markdown blast radius for a PR
-relic diff before.json after.json --check        # snapshot drift
-relic runtime coverage.lcov                      # lcov | OTLP JSON runtime evidence
+dependency-graph impact UserService.updateUser --json       # blast radius + risk score
+dependency-graph export --format mermaid > graph.mmd        # mermaid | dot
+dependency-graph check                                      # boundary rules, exit 1 on violation
+dependency-graph init                                       # .mcp.json + skills/dependency-graph/SKILL.md
+dependency-graph pr --base origin/main --head HEAD          # Markdown blast radius for a PR
+dependency-graph diff before.json after.json --check        # snapshot drift
+dependency-graph runtime coverage.lcov                      # lcov | OTLP JSON runtime evidence
 ```
 
-Boundary rules live in `.relicrc.json` (or `relic.config.json`); each rule
+Boundary rules live in `.dependency-graphrc.json` (or `dependency-graph.config.json`); each rule
 matches importer/imported paths and defaults to `IMPORTS` edges:
 
 ```json
@@ -136,11 +136,11 @@ matches importer/imported paths and defaults to `IMPORTS` edges:
 }
 ```
 
-The MCP server is the primary agent interface; `relic index` gives agents and CI a headless way to bootstrap the same graph DB the dashboard and API read.
+The MCP server is the primary agent interface; `dependency-graph index` gives agents and CI a headless way to bootstrap the same graph DB the dashboard and API read.
 
 ### Comment impact on pull requests
 
-`.github/actions/relic-pr` is a composite action that runs `relic pr`, writes
+`.github/actions/dependency-graph-pr` is a composite action that runs `dependency-graph pr`, writes
 the Markdown report, and posts it with `gh pr comment`. It needs a checkout
 with `fetch-depth: 0`, `contents: read`, and `pull-requests: write`; source
 code never leaves the runner, only symbol names, paths, and test names.
@@ -152,13 +152,13 @@ permissions:
 steps:
   - uses: actions/checkout@v4
     with: { fetch-depth: 0 }
-  - uses: ./.github/actions/relic-pr
+  - uses: ./.github/actions/dependency-graph-pr
     with:
       base: origin/${{ github.base_ref }}
       head: HEAD
 ```
 
-This repository dogfoods it in `.github/workflows/relic-pr.yml`.
+This repository dogfoods it in `.github/workflows/dependency-graph-pr.yml`.
 
 The dashboard's index bar (empty state and header) accepts a local path or a GitHub URL — GitHub sources are shallow-cloned into a temp dir (re-pulled on re-index) and never run code.
 
@@ -170,7 +170,7 @@ bun run dev            # API :8787 + dashboard :5173 + docs :5174
 
 The dashboard proxies `/api` to the API and `/docs/` to the docs server.
 `bun run build` builds the docs into the dashboard output too, so the packaged
-`relic` command serves them at `/docs/`.
+`dependency-graph` command serves them at `/docs/`.
 
 The API rejects repository paths outside `allowedRoots` (`PATH_ESCAPE`) and caps pagination; SQL is fully parameterized (see `tests/security/`).
 
@@ -192,17 +192,17 @@ it implicitly). `.github/workflows/deploy.yml` builds and deploys on pushes to
 Only the static surface is deployed. The API stays local: it depends on
 `node:sqlite`, child processes and filesystem indexing, none of which run in a
 Worker. The deployed dashboard detects the missing API, disables indexing and
-re-indexing, and lets you load a Relic snapshot file entirely in the browser to
+re-indexing, and lets you load a Dependency Graph snapshot file entirely in the browser to
 explore a graph read-only.
 
 To use indexing on a deployed dashboard, host the API somewhere that can run
 Node (container or VM) and build the dashboard with its origin:
 
 ```sh
-VITE_RELIC_API_URL=https://relic-api.example.com bun run site:build
+VITE_DEPENDENCY_GRAPH_API_URL=https://dependency-graph-api.example.com bun run site:build
 ```
 
-The build then calls `https://relic-api.example.com/api/*` instead of `/api/*`.
+The build then calls `https://dependency-graph-api.example.com/api/*` instead of `/api/*`.
 
 ## Indexing semantics
 

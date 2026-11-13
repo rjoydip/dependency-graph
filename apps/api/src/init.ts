@@ -3,11 +3,11 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const SKILL_FALLBACK = `---
-name: relic
-description: Query the Relic dependency graph before changing code. Use when asked what depends on a symbol, what breaks if X changes, which tests cover X, or how two files/routes/tables connect. Requires the "relic" MCP server.
+name: dependency-graph
+description: Query the Dependency Graph before changing code. Use when asked what depends on a symbol, what breaks if X changes, which tests cover X, or how two files/routes/tables connect. Requires the "dependency-graph" MCP server.
 ---
 
-# Relic graph
+# Dependency Graph
 
 Facts over guesses. Prefer graph answers to grep/read; never invent relationships.
 
@@ -27,7 +27,7 @@ export interface InitResult {
   changed: boolean;
 }
 
-/** Write `.mcp.json` and `skills/relic/SKILL.md`; repeated runs are no-ops. */
+/** Write `.mcp.json` and `skills/dependency-graph/SKILL.md`; repeated runs are no-ops. */
 export function initProject(rootPath: string, options: { force?: boolean } = {}): InitResult {
   const root = resolve(rootPath);
   const mcpPath = join(root, ".mcp.json");
@@ -37,10 +37,10 @@ export function initProject(rootPath: string, options: { force?: boolean } = {})
     ...existing,
     mcpServers: {
       ...servers,
-      relic: {
+      "dependency-graph": {
         command: "npx",
-        args: ["-y", "relic-graph"],
-        env: { RELIC_REPOSITORY: root },
+        args: ["-y", "dependency-graph"],
+        env: { DEPENDENCY_GRAPH_REPOSITORY: root },
       },
     },
   };
@@ -48,7 +48,7 @@ export function initProject(rootPath: string, options: { force?: boolean } = {})
   const mcpBefore = existsSync(mcpPath) ? readFileSync(mcpPath, "utf8") : null;
   if (mcpBefore !== mcpText) writeFile(mcpPath, mcpText);
 
-  const skillPath = join(root, "skills", "relic", "SKILL.md");
+  const skillPath = join(root, "skills", "dependency-graph", "SKILL.md");
   const skillText = readSkillSource();
   const skillBefore = existsSync(skillPath) ? readFileSync(skillPath, "utf8") : null;
   if (skillBefore === null || options.force === true) {
@@ -66,8 +66,8 @@ export function initProject(rootPath: string, options: { force?: boolean } = {})
 function readSkillSource(): string {
   const here = dirname(fileURLToPath(import.meta.url));
   for (const candidate of [
-    join(here, "skills", "relic", "SKILL.md"), // published: dist/skills
-    join(here, "..", "..", "..", "skills", "relic", "SKILL.md"), // dev: repo/skills
+    join(here, "skills", "dependency-graph", "SKILL.md"), // published: dist/skills
+    join(here, "..", "..", "..", "skills", "dependency-graph", "SKILL.md"), // dev: repo/skills
   ]) {
     if (existsSync(candidate)) return readFileSync(candidate, "utf8");
   }

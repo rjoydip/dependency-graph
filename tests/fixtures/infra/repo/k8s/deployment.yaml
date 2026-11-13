@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: relic-api
+  name: dependency-graph-api
 spec:
   template:
     spec:
-      serviceAccountName: relic-api
+      serviceAccountName: dependency-graph-api
       containers:
         - name: api
-          image: relic/api:latest
+          image: dependency-graph/api:latest
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: relic-api
+  name: dependency-graph-api
 spec:
   selector:
-    app: relic-api
+    app: dependency-graph-api

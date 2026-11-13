@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "bun:test";
-import type { GraphNode } from "@relic/graph-core";
+import type { GraphNode } from "@dependency-graph/graph-core";
 import {
   MAX_EXCERPT_LINES,
   coerceNodeType,
@@ -26,7 +26,7 @@ const node = (overrides: Partial<GraphNode>): GraphNode => ({
 
 describe("sourceExcerpt", () => {
   it("returns a line-numbered window capped at MAX_EXCERPT_LINES", () => {
-    const root = mkdtempSync(join(tmpdir(), "relic-excerpt-"));
+    const root = mkdtempSync(join(tmpdir(), "dependency-graph-excerpt-"));
     try {
       writeFileSync(
         join(root, "big.ts"),
@@ -44,7 +44,7 @@ describe("sourceExcerpt", () => {
   });
 
   it("returns null without a file or for missing files", () => {
-    const root = mkdtempSync(join(tmpdir(), "relic-excerpt-"));
+    const root = mkdtempSync(join(tmpdir(), "dependency-graph-excerpt-"));
     try {
       expect(sourceExcerpt(root, node({ filePath: null }))).toBeNull();
       expect(sourceExcerpt(root, node({ filePath: "missing.ts" }))).toBeNull();

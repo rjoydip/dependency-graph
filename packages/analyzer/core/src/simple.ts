@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import type { Diagnostic, GraphNode, NodeType } from "@relic/graph-core";
+import type { Diagnostic, GraphNode, NodeType } from "@dependency-graph/graph-core";
 import type { RepositoryContext } from "./discovery";
 import { isTestFile, sha1 } from "./discovery";
 import {

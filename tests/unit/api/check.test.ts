@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "bun:test";
-import type { GraphEdge, GraphNode } from "@relic/graph-core";
+import type { GraphEdge, GraphNode } from "@dependency-graph/graph-core";
 import { evaluateBoundaries, globMatch, loadBoundaryConfig } from "../../../apps/api/src/check";
 
 const node = (id: string, filePath: string): GraphNode => ({
@@ -87,11 +87,11 @@ describe("evaluateBoundaries", () => {
 });
 
 describe("loadBoundaryConfig", () => {
-  it("loads .relicrc.json, filters invalid rules, and supports explicit paths", () => {
-    const root = mkdtempSync(join(tmpdir(), "relic-check-"));
+  it("loads .dependency-graphrc.json, filters invalid rules, and supports explicit paths", () => {
+    const root = mkdtempSync(join(tmpdir(), "dependency-graph-check-"));
     try {
       writeFileSync(
-        join(root, ".relicrc.json"),
+        join(root, ".dependency-graphrc.json"),
         JSON.stringify({
           boundaries: [
             { from: "src/ui/**", to: "src/db/**", message: "no" },
@@ -100,7 +100,7 @@ describe("loadBoundaryConfig", () => {
         }),
       );
       const config = loadBoundaryConfig(root);
-      expect(config?.source).toBe(join(root, ".relicrc.json"));
+      expect(config?.source).toBe(join(root, ".dependency-graphrc.json"));
       expect(config?.rules).toHaveLength(1);
 
       const explicit = join(root, "custom.json");

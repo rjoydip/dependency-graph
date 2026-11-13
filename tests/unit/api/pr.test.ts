@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import type { GraphNode, GraphRepository, GraphService } from "@relic/graph-core";
-import type { ChangedRange } from "@relic/indexer";
+import type { GraphNode, GraphRepository, GraphService } from "@dependency-graph/graph-core";
+import type { ChangedRange } from "@dependency-graph/indexer";
 import { aggregatePrImpact, formatPrImpact, type PrImpact } from "../../../apps/api/src/pr";
 
 const node = (name: string, filePath: string, type: GraphNode["type"] = "symbol"): GraphNode => ({
@@ -36,7 +36,7 @@ const report: PrImpact = {
 describe("PR impact markdown", () => {
   it("lists blast radius, tests, risk, and coverage caveats", () => {
     const markdown = formatPrImpact(report);
-    expect(markdown).toContain("## Relic impact");
+    expect(markdown).toContain("## Dependency Graph impact");
     expect(markdown).toContain("**Risk:** 42/100");
     expect(markdown).toContain("2 unresolved relationships");
     expect(markdown).toContain("`UserService.updateUser`");

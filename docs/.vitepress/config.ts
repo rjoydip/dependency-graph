@@ -3,7 +3,7 @@ import { defineConfig } from "vitepress";
 const base = "/docs/";
 
 export default defineConfig({
-  title: "Relic",
+  title: "Dependency Graph",
   description: "Static dependency-graph engine for TypeScript repositories",
   // The dashboard Worker serves the docs under /docs/, so the header link can
   // stay relative and no separate hostname has to be configured.
@@ -19,7 +19,7 @@ export default defineConfig({
     lightModeSwitchTitle: "Switch to light theme",
     darkModeSwitchTitle: "Switch to dark theme",
     sidebar: [
-      { text: "Overview", link: "/#what-relic-is" },
+      { text: "Overview", link: "/#what-dependency-graph-is" },
       { text: "Requirements", link: "/#requirements" },
       { text: "Install from source", link: "/#install-from-source" },
       { text: "MCP server", link: "/#mcp-server" },
@@ -35,14 +35,14 @@ export default defineConfig({
     ],
     outline: { level: [2, 3] },
     search: { provider: "local" },
-    socialLinks: [{ icon: "github", link: "https://github.com/rjoydip/relic" }],
+    socialLinks: [{ icon: "github", link: "https://github.com/rjoydip/dependency-graph" }],
     editLink: {
-      pattern: "https://github.com/rjoydip/relic/edit/main/docs/index.md",
+      pattern: "https://github.com/rjoydip/dependency-graph/edit/main/docs/index.md",
       text: "Edit this page",
     },
     footer: {
       message: "Local-first · no data leaves your machine",
-      copyright: "Relic",
+      copyright: "Dependency Graph",
     },
   },
 });

@@ -7,10 +7,10 @@ import {
   type ExtractedFile,
   type RefInfo,
   type RefLookup,
-} from "@relic/analyzer-core";
-import { extractGoFile } from "@relic/analyzer-go";
-import { extractJavaFile } from "@relic/analyzer-java";
-import { extractRustFile } from "@relic/analyzer-rust";
+} from "@dependency-graph/analyzer-core";
+import { extractGoFile } from "@dependency-graph/analyzer-go";
+import { extractJavaFile } from "@dependency-graph/analyzer-java";
+import { extractRustFile } from "@dependency-graph/analyzer-rust";
 import { ANALYZER_FIXTURES } from "../../helpers";
 
 const polyglot = ANALYZER_FIXTURES;

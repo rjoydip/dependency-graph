@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import type { GraphEdge, GraphNode } from "@relic/graph-core";
+import type { GraphEdge, GraphNode } from "@dependency-graph/graph-core";
 import { toDot, toMermaid } from "../../../apps/api/src/export";
 
 const node = (id: string, name: string): GraphNode => ({
@@ -38,7 +38,7 @@ describe("graph export", () => {
 
   it("renders Graphviz DOT", () => {
     const dot = toDot(nodes, [edge]);
-    expect(dot).toContain("digraph relic {");
+    expect(dot).toContain('digraph "dependency-graph" {');
     expect(dot).toContain('n0 [label="caller (symbol)"];');
     expect(dot).toContain('n0 -> n1 [label="CALLS"];');
     expect(dot).toContain('weird\\"name');

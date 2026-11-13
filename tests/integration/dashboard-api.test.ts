@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
-import { repositoryIdFor } from "@relic/indexer";
+import { repositoryIdFor } from "@dependency-graph/indexer";
 import { buildApp, parseGitHubUrl } from "../../apps/api/src/app";
 import { cleanup, copyFixture, FIXTURE_ROOT, json, tempDir } from "../helpers";
 
@@ -206,7 +206,7 @@ describe("dashboard API", () => {
       nodes: Array<{ id: string }>;
       edges: unknown[];
     }>(await app.request(`/api/repositories/${repoId}/snapshot`));
-    expect(snapshot.format).toBe("relic-snapshot");
+    expect(snapshot.format).toBe("dependency-graph-snapshot");
     expect(snapshot.version).toBe(1);
     expect(snapshot.nodes.length).toBeGreaterThan(0);
     expect(snapshot.edges.length).toBeGreaterThan(0);

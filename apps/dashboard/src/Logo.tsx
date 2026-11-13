@@ -2,7 +2,7 @@
 // only used for the favicon and docs, where currentColor is unavailable
 export function Logo({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 128 128" role="img" aria-label="Relic">
+    <svg className={className} viewBox="0 0 128 128" role="img" aria-label="Dependency Graph">
       <path
         d="M64 40 41 86M64 40l23 46M41 86h46"
         fill="none"

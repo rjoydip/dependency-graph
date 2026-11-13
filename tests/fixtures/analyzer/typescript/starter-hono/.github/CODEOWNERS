@@ -1,4 +1,4 @@
-* @relic/core
-src/services/* @relic/services
-src/repositories/* @relic/data
-tests/ @relic/qa
+* @dependency-graph/core
+src/services/* @dependency-graph/services
+src/repositories/* @dependency-graph/data
+tests/ @dependency-graph/qa

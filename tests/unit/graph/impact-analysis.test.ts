@@ -7,8 +7,13 @@ import type {
   RepositoryMeta,
   TraversalRequest,
   TraversalStep,
-} from "@relic/graph-core";
-import { CONFIDENCE, GraphError, GraphService, type GraphRepository } from "@relic/graph-core";
+} from "@dependency-graph/graph-core";
+import {
+  CONFIDENCE,
+  GraphError,
+  GraphService,
+  type GraphRepository,
+} from "@dependency-graph/graph-core";
 
 /** In-memory reference repository — also a second implementation of the
  * traversal semantics (BFS with depth bound, type filter, limit). */

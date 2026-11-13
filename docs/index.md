@@ -1,13 +1,13 @@
-# Relic
+# Dependency Graph
 
-Static dependency-graph engine for TypeScript/JavaScript, Python, Rust, Java and Go repositories. Relic parses
+Static dependency-graph engine for TypeScript/JavaScript, Python, Rust, Java and Go repositories. Dependency Graph parses
 your source, reads service/deployment manifests, stores the result in a local SQLite database, and exposes it
 three ways: an MCP server for coding agents, a CLI + HTTP API, and a React Flow dashboard.
 
 Everything runs locally. No account, no hosted service, no source code leaves the machine — the only network
 access is an optional `git clone` when you ask it to index a GitHub URL.
 
-## What Relic is
+## What Dependency Graph is
 
 Ask "what breaks if I change `UserService.updateUser`?" and get an evidence-backed list: every edge carries a
 source file, line, confidence (`static` 1.0 vs `inferred` 0.6), and a note explaining how it was resolved.
@@ -15,8 +15,8 @@ Calls that cannot be resolved become diagnostics; they never become invented edg
 
 - **MCP server** — 15 tools, 3 resources and 2 prompts over stdio, for Claude Code, Cursor, Cline, Windsurf,
   or any MCP client.
-- **CLI** — `relic` indexes a project, serves the API + dashboard, and opens a browser. `relic index` is the
-  headless variant for scripts and CI; `relic diff a.json b.json --check` fails on snapshot drift.
+- **CLI** — `dependency-graph` indexes a project, serves the API + dashboard, and opens a browser. `dependency-graph index` is the
+  headless variant for scripts and CI; `dependency-graph diff a.json b.json --check` fails on snapshot drift.
 - **Dashboard** — React + React Flow explorer with node search, neighbourhood expansion, code peek,
   impact analysis (risk score, coupling, owners) and cycle highlighting.
 - **Library** — `graph-core` (domain + traversal + impact), `database` (SQLite repository), `analyzer-core`
@@ -24,7 +24,7 @@ Calls that cannot be resolved become diagnostics; they never become invented edg
   `analyzer-rust`, `analyzer-java`, `analyzer-go`), `indexer` (incremental orchestration, manifests,
   runtime evidence).
 
-Relic supports TypeScript/JavaScript, Python, Rust, Java and Go today. The analyzer never executes indexed
+Dependency Graph supports TypeScript/JavaScript, Python, Rust, Java and Go today. The analyzer never executes indexed
 code — it only reads it.
 
 ## Requirements
@@ -37,8 +37,8 @@ code — it only reads it.
 
 ## Install from source
 
-Relic is not published to npm yet. Everything below assumes a checkout of
-[github.com/rjoydip/relic](https://github.com/rjoydip/relic).
+Dependency Graph is not published to npm yet. Everything below assumes a checkout of
+[github.com/rjoydip/dependency-graph](https://github.com/rjoydip/dependency-graph).
 
 ```sh
 bun install
@@ -66,25 +66,25 @@ protocol messages; all logs go to stderr.
 ```json
 {
   "mcpServers": {
-    "relic": {
+    "dependency-graph": {
       "command": "node",
-      "args": ["/absolute/path/to/relic/apps/api/dist/index.js"],
-      "env": { "RELIC_REPOSITORY": "/absolute/path/to/your/repo" }
+      "args": ["/absolute/path/to/dependency-graph/apps/api/dist/index.js"],
+      "env": { "DEPENDENCY_GRAPH_REPOSITORY": "/absolute/path/to/your/repo" }
     }
   }
 }
 ```
 
-Point `args` at `/absolute/path/to/relic/apps/mcp/src/index.ts` with `"command": "bun"` if you have not
+Point `args` at `/absolute/path/to/dependency-graph/apps/mcp/src/index.ts` with `"command": "bun"` if you have not
 built the bundle.
 
 ### Environment
 
-| Variable           | Default                   | Effect                                            |
-| ------------------ | ------------------------- | ------------------------------------------------- |
-| `RELIC_REPOSITORY` | —                         | Default repository for tool calls (path or id)    |
-| `RELIC_ROOT`       | `RELIC_REPOSITORY` or cwd | Project auto-indexed at startup                   |
-| `RELIC_DB`         | `<tmpdir>/relic.db`       | Graph SQLite file (shared with the CLI/dashboard) |
+| Variable                      | Default                              | Effect                                            |
+| ----------------------------- | ------------------------------------ | ------------------------------------------------- |
+| `DEPENDENCY_GRAPH_REPOSITORY` | —                                    | Default repository for tool calls (path or id)    |
+| `DEPENDENCY_GRAPH_ROOT`       | `DEPENDENCY_GRAPH_REPOSITORY` or cwd | Project auto-indexed at startup                   |
+| `DEPENDENCY_GRAPH_DB`         | `<tmpdir>/dependency-graph.db`       | Graph SQLite file (shared with the CLI/dashboard) |
 
 ### Tools
 
@@ -120,32 +120,32 @@ for `nodeId`. Errors are returned as `ERROR [CODE]: message` with `isError: true
 ## CLI
 
 ```sh
-relic                          # index cwd, serve API + UI, open the browser
-relic /path/to/repo            # index a specific project
-relic --port 9000 --no-open    # --port, --db, --no-open, --watch
-relic index /path/to/repo      # one-shot: index, print IndexResult JSON on
+dependency-graph                          # index cwd, serve API + UI, open the browser
+dependency-graph /path/to/repo            # index a specific project
+dependency-graph --port 9000 --no-open    # --port, --db, --no-open, --watch
+dependency-graph index /path/to/repo      # one-shot: index, print IndexResult JSON on
                                # stdout, exit non-zero on failure
-relic impact <symbol> --json   # blast radius + deterministic risk score
-relic export --format mermaid  # mermaid | dot
-relic check                    # architecture boundary rules, exit 1 on violation
-relic init                     # merge .mcp.json + write skills/relic/SKILL.md
-relic pr --base origin/main    # Markdown impact report for a pull request
-relic diff a.json b.json --check
-relic runtime coverage.lcov    # upgrade CALLS/TESTS edges from lcov or OTLP JSON
+dependency-graph impact <symbol> --json   # blast radius + deterministic risk score
+dependency-graph export --format mermaid  # mermaid | dot
+dependency-graph check                    # architecture boundary rules, exit 1 on violation
+dependency-graph init                     # merge .mcp.json + write skills/dependency-graph/SKILL.md
+dependency-graph pr --base origin/main    # Markdown impact report for a pull request
+dependency-graph diff a.json b.json --check
+dependency-graph runtime coverage.lcov    # upgrade CALLS/TESTS edges from lcov or OTLP JSON
 ```
 
 - Server binds `127.0.0.1` only; `--no-open` skips launching the browser.
 - Port: `--port`, else `PORT`, else `8787`.
-- Database: `--db`, else `RELIC_DB`, else `<tmpdir>/relic.db`. The MCP server, CLI, API and dashboard share it.
-- `relic index` writes JSON to stdout and logs to stderr, which is what agents and CI consume.
-- `--watch` re-indexes incrementally on changes and pushes `graph-updated` SSE events. Branch switches are not detected — run `relic index` after a checkout.
-- `relic runtime <file>` re-indexes first, then upgrades matching `CALLS`/`TESTS` edges. `--runtime-format lcov|otel`
+- Database: `--db`, else `DEPENDENCY_GRAPH_DB`, else `<tmpdir>/dependency-graph.db`. The MCP server, CLI, API and dashboard share it.
+- `dependency-graph index` writes JSON to stdout and logs to stderr, which is what agents and CI consume.
+- `--watch` re-indexes incrementally on changes and pushes `graph-updated` SSE events. Branch switches are not detected — run `dependency-graph index` after a checkout.
+- `dependency-graph runtime <file>` re-indexes first, then upgrades matching `CALLS`/`TESTS` edges. `--runtime-format lcov|otel`
   overrides format detection; `--json` prints the `RuntimeReport`. Static conflicts become `runtime-conflict`
   diagnostics.
 
 ### Boundary rules
 
-`relic check` reads `.relicrc.json` (or `relic.config.json`, or `--config <file>`):
+`dependency-graph check` reads `.dependency-graphrc.json` (or `dependency-graph.config.json`, or `--config <file>`):
 
 ```json
 {
@@ -161,7 +161,7 @@ command exits 1.
 
 ### Pull request comments
 
-`.github/actions/relic-pr` runs `relic pr`, then posts the Markdown report with `gh pr comment`. It needs
+`.github/actions/dependency-graph-pr` runs `dependency-graph pr`, then posts the Markdown report with `gh pr comment`. It needs
 `fetch-depth: 0`, `contents: read`, and `pull-requests: write`. Only symbol names, paths, test names, and
 evidence locations are sent — no source text.
 
@@ -192,7 +192,7 @@ Pagination is capped at 5000 rows. Errors come back as `{ "error": "<CODE>", "me
 for input problems and `404` for `REPOSITORY_NOT_FOUND` / `NODE_NOT_FOUND`. Codes: `INVALID_INPUT`,
 `REPOSITORY_NOT_FOUND`, `NODE_NOT_FOUND`, `PATH_ESCAPE`, `INTERNAL`.
 
-GitHub sources are shallow-cloned into `<tmpdir>/relic-github/<hash>` and `git pull --ff-only` on re-index;
+GitHub sources are shallow-cloned into `<tmpdir>/dependency-graph-github/<hash>` and `git pull --ff-only` on re-index;
 they are rejected when the API is configured with `allowedRoots`.
 
 ## Dashboard
@@ -203,7 +203,7 @@ bun run dev            # starts API :8787, dashboard :5173, docs :5174
 
 The dashboard proxies `/api` to the API and `/docs/` to the docs server, so
 `http://127.0.0.1:5173/docs/` works in dev. `bun run build` also builds the docs
-into the dashboard output, and `relic` serves them at `/docs/`.
+into the dashboard output, and `dependency-graph` serves them at `/docs/`.
 
 The UI supports searching nodes, expanding a neighbourhood, poking at source code, and running impact
 analysis. Its index bar accepts a local path or a GitHub URL.
@@ -283,7 +283,7 @@ packages/
   indexer/                incremental indexing (hash change detection, importer re-expansion), runtime evidence
 apps/
   mcp/                    MCP stdio server: 15 tools, 3 resources, 2 prompts
-  api/                    Hono API + the publishable package: `relic` CLI and `relic-mcp` bins
+  api/                    Hono API + the publishable package: `dependency-graph` CLI and `dependency-graph-mcp` bins
   dashboard/              React + React Flow graph explorer
 tests/
   fixtures/analyzer/typescript/  deterministic fixture (UserController → UserService.updateUser → UserRepository.update)

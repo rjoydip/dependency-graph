@@ -95,7 +95,7 @@ export function App() {
   const [reindexing, setReindexing] = useState(false);
   const [switching, setSwitching] = useState(false);
   const [explorerView, setExplorerView] = useState<"tree" | "flat">(() =>
-    localStorage.getItem("relic-explorer") === "flat" ? "flat" : "tree",
+    localStorage.getItem("dependency-graph-explorer") === "flat" ? "flat" : "tree",
   );
   const [error, setError] = useState<string | null>(null);
   // deployed as static assets only (Cloudflare) — no API behind /api
@@ -111,7 +111,7 @@ export function App() {
   });
   const [focusToken, setFocusToken] = useState(0);
   const [theme, setTheme] = useState<"dark" | "light">(() =>
-    localStorage.getItem("relic-theme") === "light" ? "light" : "dark",
+    localStorage.getItem("dependency-graph-theme") === "light" ? "light" : "dark",
   );
   const [code, setCode] = useState<CodeTarget | null>(null);
   const [metadataOpen, setMetadataOpen] = useState(false);
@@ -133,15 +133,15 @@ export function App() {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-    localStorage.setItem("relic-theme", theme);
+    localStorage.setItem("dependency-graph-theme", theme);
     // the accent picker is gone — drop its persisted value so a stale accent
     // accent from an older build can never override the monochrome theme
-    localStorage.removeItem("relic-accent");
+    localStorage.removeItem("dependency-graph-accent");
     document.documentElement.style.removeProperty("--accent");
   }, [theme]);
 
   useEffect(() => {
-    localStorage.setItem("relic-explorer", explorerView);
+    localStorage.setItem("dependency-graph-explorer", explorerView);
   }, [explorerView]);
 
   const repo = snapshotRepo ?? repositories.find((r) => r.id === repoId) ?? null;
@@ -328,7 +328,7 @@ export function App() {
   // clear the dashboard entirely and land back on the index screen; indexed
   // repositories stay in the history list below the form
   const resetView = useCallback(() => {
-    localStorage.removeItem("relic-explorer");
+    localStorage.removeItem("dependency-graph-explorer");
     setRepoId(null);
     setSelected(null);
     setQuery("");
@@ -369,7 +369,7 @@ export function App() {
       );
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${repo?.name ?? "relic"}-snapshot.json`;
+      a.download = `${repo?.name ?? "dependency-graph"}-snapshot.json`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
@@ -492,7 +492,7 @@ export function App() {
     <Hint label="Reset dashboard">
       <button type="button" className="brand" onClick={resetView} aria-label="Reset dashboard">
         <Logo className="brand-logo" />
-        Relic
+        Dependency Graph
       </button>
     </Hint>
   );
@@ -564,15 +564,15 @@ export function App() {
             {staticMode ? (
               <p className="static-note">
                 This hosted dashboard is read-only. Load a <code>.json</code> snapshot exported from
-                Relic to browse its dependency graph — indexing and re-indexing run in the local
-                app. Use <strong>Download snapshot</strong> there to create one.
+                Dependency Graph to browse its dependency graph — indexing and re-indexing run in
+                the local app. Use <strong>Download snapshot</strong> there to create one.
               </p>
             ) : (
               <>
                 <p className="muted">
-                  Point Relic at a local folder or a public GitHub repository. It maps files,
-                  routes, classes, calls and tests into one graph — local paths never leave your
-                  machine.
+                  Point Dependency Graph at a local folder or a public GitHub repository. It maps
+                  files, routes, classes, calls and tests into one graph — local paths never leave
+                  your machine.
                 </p>
                 <IndexForm busy={indexing} onIndex={runIndex} />
               </>
@@ -963,7 +963,7 @@ function LoadingOverlay({ label }: { label: string }) {
     <div className="loading-screen" role="status" aria-live="polite">
       <div className="loading-card">
         <Logo className="loading-logo" />
-        <span className="loading-title">Relic</span>
+        <span className="loading-title">Dependency Graph</span>
         <span className="loading-label">{label}</span>
         <span className="loading-bar" aria-hidden="true">
           <i />

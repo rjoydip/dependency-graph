@@ -9,30 +9,30 @@ import {
   ownersFor,
   parseBlamePorcelain,
   parseCodeowners,
-} from "@relic/analyzer-typescript";
+} from "@dependency-graph/analyzer-typescript";
 
 const rules = parseCodeowners(`
 # comment
-* @relic/core
-src/services/* @relic/services
-src/repositories/* @relic/data
-docs/ @relic/docs
-*.md @relic/writers
-!src/services/generated.ts @relic/generated
+* @dependency-graph/core
+src/services/* @dependency-graph/services
+src/repositories/* @dependency-graph/data
+docs/ @dependency-graph/docs
+*.md @dependency-graph/writers
+!src/services/generated.ts @dependency-graph/generated
 `);
 
 describe("CODEOWNERS matching", () => {
   it("uses the last matching rule and any-level basename patterns", () => {
-    expect(ownersFor(rules, "src/services/user.ts")).toEqual(["@relic/services"]);
-    expect(ownersFor(rules, "src/repositories/user.ts")).toEqual(["@relic/data"]);
-    expect(ownersFor(rules, "README.md")).toEqual(["@relic/writers"]);
-    expect(ownersFor(rules, "docs/index.md")).toEqual(["@relic/writers"]);
-    expect(ownersFor(rules, "src/cycle.ts")).toEqual(["@relic/core"]);
+    expect(ownersFor(rules, "src/services/user.ts")).toEqual(["@dependency-graph/services"]);
+    expect(ownersFor(rules, "src/repositories/user.ts")).toEqual(["@dependency-graph/data"]);
+    expect(ownersFor(rules, "README.md")).toEqual(["@dependency-graph/writers"]);
+    expect(ownersFor(rules, "docs/index.md")).toEqual(["@dependency-graph/writers"]);
+    expect(ownersFor(rules, "src/cycle.ts")).toEqual(["@dependency-graph/core"]);
   });
 
   it("supports negation and directory patterns", () => {
     expect(ownersFor(rules, "src/services/generated.ts")).toEqual([]);
-    expect(ownersFor(rules, "docs/guide/setup.md")).toEqual(["@relic/writers"]);
+    expect(ownersFor(rules, "docs/guide/setup.md")).toEqual(["@dependency-graph/writers"]);
   });
 
   it("returns no owners when nothing matches", () => {
@@ -72,7 +72,7 @@ describe("git blame parsing", () => {
 
 describe("CODEOWNERS loading and blame", () => {
   it("reads the first CODEOWNERS location and missing files return no rules", () => {
-    const root = mkdtempSync(join(tmpdir(), "relic-owners-"));
+    const root = mkdtempSync(join(tmpdir(), "dependency-graph-owners-"));
     try {
       mkdirSync(join(root, ".github"), { recursive: true });
       writeFileSync(join(root, ".github", "CODEOWNERS"), "src/** @team\n");
@@ -86,7 +86,7 @@ describe("CODEOWNERS loading and blame", () => {
   });
 
   it("summarises blame for a real git commit and returns null outside git", () => {
-    const root = mkdtempSync(join(tmpdir(), "relic-blame-"));
+    const root = mkdtempSync(join(tmpdir(), "dependency-graph-blame-"));
     try {
       execFileSync("git", ["init"], { cwd: root, stdio: "pipe" });
       execFileSync("git", ["config", "user.email", "test@example.com"], { cwd: root });

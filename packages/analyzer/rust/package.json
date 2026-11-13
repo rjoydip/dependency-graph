@@ -1,5 +1,5 @@
 {
-  "name": "@relic/analyzer-rust",
+  "name": "@dependency-graph/analyzer-rust",
   "version": "0.1.0",
   "type": "module",
   "main": "src/index.ts",
@@ -7,7 +7,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@relic/analyzer-core": "workspace:*",
-    "@relic/graph-core": "workspace:*"
+    "@dependency-graph/analyzer-core": "workspace:*",
+    "@dependency-graph/graph-core": "workspace:*"
   }
 }

@@ -206,7 +206,7 @@ test("inspector shows owners, coupling, risk, and highlights a cycle", async ({ 
 
   const inspector = page.locator(".inspector");
   await expect(inspector.getByText("Coupling")).toBeVisible();
-  await expect(inspector.locator(".owners-row")).toContainText("@relic/core");
+  await expect(inspector.locator(".owners-row")).toContainText("@dependency-graph/core");
   await expect(inspector.locator(".risk-score")).toContainText("risk");
 
   await inspector.getByRole("tab", { name: /^Cycles/ }).click();
@@ -266,7 +266,7 @@ test("snapshot round-trips through the API and the index screen", async ({ page 
   const repos = await (await page.request.get("/api/repositories")).json();
   const id = repos.repositories[0].id;
   const snapshot = await (await page.request.get(`/api/repositories/${id}/snapshot`)).json();
-  expect(snapshot.format).toBe("relic-snapshot");
+  expect(snapshot.format).toBe("dependency-graph-snapshot");
   expect(snapshot.nodes.length).toBeGreaterThan(0);
   expect(snapshot.edges.length).toBeGreaterThan(0);
 
@@ -302,7 +302,7 @@ test("static deployment renders snapshots client-side without the API", async ({
   await expect(page.getByRole("button", { name: "Load snapshot" })).toBeVisible();
 
   const snapshot = {
-    format: "relic-snapshot",
+    format: "dependency-graph-snapshot",
     version: 1,
     repository: {
       name: "demo",

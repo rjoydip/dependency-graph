@@ -9,10 +9,11 @@ import { join } from "node:path";
 const API_PORT = 8790;
 const WEB_PORT = 5174;
 const apiUrl = `http://127.0.0.1:${API_PORT}`;
-const dbPath = join(tmpdir(), `relic-e2e-${process.pid}.db`);
+const dbPath = join(tmpdir(), `dependency-graph-e2e-${process.pid}.db`);
 try {
   for (const f of readdirSync(tmpdir())) {
-    if (f.startsWith("relic-e2e-") && f.endsWith(".db")) rmSync(join(tmpdir(), f), { force: true });
+    if (f.startsWith("dependency-graph-e2e-") && f.endsWith(".db"))
+      rmSync(join(tmpdir(), f), { force: true });
   }
 } catch {
   // best effort — a stale tmp db is not worth failing the run for
@@ -39,14 +40,14 @@ export default defineConfig({
       url: `${apiUrl}/api/repositories`,
       reuseExistingServer: false,
       timeout: 30_000,
-      env: { PORT: String(API_PORT), RELIC_DB: dbPath },
+      env: { PORT: String(API_PORT), DEPENDENCY_GRAPH_DB: dbPath },
     },
     {
       command: `vite apps/dashboard --port ${WEB_PORT} --strictPort`,
       url: `http://localhost:${WEB_PORT}`,
       reuseExistingServer: false,
       timeout: 30_000,
-      env: { RELIC_API_URL: apiUrl },
+      env: { DEPENDENCY_GRAPH_API_URL: apiUrl },
     },
   ],
 });

@@ -10,15 +10,15 @@
         "@effect/platform-node": "^4.1.2",
         "@modelcontextprotocol/sdk": "^1.20.0",
         "@playwright/test": "^1.64.1",
-        "@relic/analyzer-core": "workspace:*",
-        "@relic/analyzer-go": "workspace:*",
-        "@relic/analyzer-java": "workspace:*",
-        "@relic/analyzer-python": "workspace:*",
-        "@relic/analyzer-rust": "workspace:*",
-        "@relic/analyzer-typescript": "workspace:*",
-        "@relic/database": "workspace:*",
-        "@relic/graph-core": "workspace:*",
-        "@relic/indexer": "workspace:*",
+        "@dependency-graph/analyzer-core": "workspace:*",
+        "@dependency-graph/analyzer-go": "workspace:*",
+        "@dependency-graph/analyzer-java": "workspace:*",
+        "@dependency-graph/analyzer-python": "workspace:*",
+        "@dependency-graph/analyzer-rust": "workspace:*",
+        "@dependency-graph/analyzer-typescript": "workspace:*",
+        "@dependency-graph/database": "workspace:*",
+        "@dependency-graph/graph-core": "workspace:*",
+        "@dependency-graph/indexer": "workspace:*",
         "@types/bun": "^1.3.0",
         "alchemy": "^2.0.0-beta.85",
         "effect": "^4.1.2",
@@ -31,11 +31,11 @@
       },
     },
     "apps/api": {
-      "name": "relic-graph",
+      "name": "dependency-graph",
       "version": "0.1.0",
       "bin": {
-        "relic": "./dist/cli.js",
-        "relic-mcp": "./dist/index.js",
+        "dependency-graph": "./dist/cli.js",
+        "dependency-graph-mcp": "./dist/index.js",
       },
       "dependencies": {
         "@hono/node-server": "^2.1.5",
@@ -45,14 +45,14 @@
         "zod": "^4.6.6",
       },
       "devDependencies": {
-        "@relic/analyzer-typescript": "workspace:*",
-        "@relic/graph-core": "workspace:*",
-        "@relic/indexer": "workspace:*",
-        "@relic/mcp-server": "workspace:*",
+        "@dependency-graph/analyzer-typescript": "workspace:*",
+        "@dependency-graph/graph-core": "workspace:*",
+        "@dependency-graph/indexer": "workspace:*",
+        "@dependency-graph/mcp-server": "workspace:*",
       },
     },
     "apps/dashboard": {
-      "name": "@relic/dashboard",
+      "name": "@dependency-graph/dashboard",
       "version": "0.1.0",
       "dependencies": {
         "@base-ui/react": "^1.9.0",
@@ -76,95 +76,95 @@
       },
     },
     "apps/mcp": {
-      "name": "@relic/mcp-server",
+      "name": "@dependency-graph/mcp-server",
       "version": "0.1.0",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.20.0",
-        "@relic/analyzer-typescript": "workspace:*",
-        "@relic/database": "workspace:*",
-        "@relic/graph-core": "workspace:*",
-        "@relic/indexer": "workspace:*",
+        "@dependency-graph/analyzer-typescript": "workspace:*",
+        "@dependency-graph/database": "workspace:*",
+        "@dependency-graph/graph-core": "workspace:*",
+        "@dependency-graph/indexer": "workspace:*",
         "zod": "^4.6.6",
       },
     },
     "docs": {
-      "name": "@relic/docs",
+      "name": "@dependency-graph/docs",
       "devDependencies": {
         "vitepress": "^1.6.4",
       },
     },
     "packages/analyzer/core": {
-      "name": "@relic/analyzer-core",
+      "name": "@dependency-graph/analyzer-core",
       "version": "0.1.0",
       "dependencies": {
-        "@relic/graph-core": "workspace:*",
+        "@dependency-graph/graph-core": "workspace:*",
         "typescript": "^5.9.2",
       },
     },
     "packages/analyzer/go": {
-      "name": "@relic/analyzer-go",
+      "name": "@dependency-graph/analyzer-go",
       "version": "0.1.0",
       "dependencies": {
-        "@relic/analyzer-core": "workspace:*",
-        "@relic/graph-core": "workspace:*",
+        "@dependency-graph/analyzer-core": "workspace:*",
+        "@dependency-graph/graph-core": "workspace:*",
       },
     },
     "packages/analyzer/java": {
-      "name": "@relic/analyzer-java",
+      "name": "@dependency-graph/analyzer-java",
       "version": "0.1.0",
       "dependencies": {
-        "@relic/analyzer-core": "workspace:*",
-        "@relic/graph-core": "workspace:*",
+        "@dependency-graph/analyzer-core": "workspace:*",
+        "@dependency-graph/graph-core": "workspace:*",
       },
     },
     "packages/analyzer/python": {
-      "name": "@relic/analyzer-python",
+      "name": "@dependency-graph/analyzer-python",
       "version": "0.1.0",
       "dependencies": {
-        "@relic/analyzer-core": "workspace:*",
-        "@relic/graph-core": "workspace:*",
+        "@dependency-graph/analyzer-core": "workspace:*",
+        "@dependency-graph/graph-core": "workspace:*",
       },
     },
     "packages/analyzer/rust": {
-      "name": "@relic/analyzer-rust",
+      "name": "@dependency-graph/analyzer-rust",
       "version": "0.1.0",
       "dependencies": {
-        "@relic/analyzer-core": "workspace:*",
-        "@relic/graph-core": "workspace:*",
+        "@dependency-graph/analyzer-core": "workspace:*",
+        "@dependency-graph/graph-core": "workspace:*",
       },
     },
     "packages/analyzer/typescript": {
-      "name": "@relic/analyzer-typescript",
+      "name": "@dependency-graph/analyzer-typescript",
       "version": "0.1.0",
       "dependencies": {
-        "@relic/analyzer-core": "workspace:*",
-        "@relic/graph-core": "workspace:*",
+        "@dependency-graph/analyzer-core": "workspace:*",
+        "@dependency-graph/graph-core": "workspace:*",
         "typescript": "^5.9.2",
       },
     },
     "packages/core": {
-      "name": "@relic/graph-core",
+      "name": "@dependency-graph/graph-core",
       "version": "0.1.0",
     },
     "packages/database": {
-      "name": "@relic/database",
+      "name": "@dependency-graph/database",
       "version": "0.1.0",
       "dependencies": {
-        "@relic/graph-core": "workspace:*",
+        "@dependency-graph/graph-core": "workspace:*",
       },
     },
     "packages/indexer": {
-      "name": "@relic/indexer",
+      "name": "@dependency-graph/indexer",
       "version": "0.1.0",
       "dependencies": {
-        "@relic/analyzer-core": "workspace:*",
-        "@relic/analyzer-go": "workspace:*",
-        "@relic/analyzer-java": "workspace:*",
-        "@relic/analyzer-python": "workspace:*",
-        "@relic/analyzer-rust": "workspace:*",
-        "@relic/analyzer-typescript": "workspace:*",
-        "@relic/database": "workspace:*",
-        "@relic/graph-core": "workspace:*",
+        "@dependency-graph/analyzer-core": "workspace:*",
+        "@dependency-graph/analyzer-go": "workspace:*",
+        "@dependency-graph/analyzer-java": "workspace:*",
+        "@dependency-graph/analyzer-python": "workspace:*",
+        "@dependency-graph/analyzer-rust": "workspace:*",
+        "@dependency-graph/analyzer-typescript": "workspace:*",
+        "@dependency-graph/database": "workspace:*",
+        "@dependency-graph/graph-core": "workspace:*",
       },
     },
   },
@@ -535,29 +535,29 @@
 
     "@redis/time-series": ["@redis/time-series@6.3.1", "", { "peerDependencies": { "@redis/client": "^6.3.1" } }, "sha512-MNDgrm+i63M/1a+XA+HcDsScwt4uBh/fGGJ84swTQZTFK5K5wMmxdlTRa4ZgmNJzjxMaszW/ipPScMUGV3aAMg=="],
 
-    "@relic/analyzer-core": ["@relic/analyzer-core@workspace:packages/analyzer/core"],
+    "@dependency-graph/analyzer-core": ["@dependency-graph/analyzer-core@workspace:packages/analyzer/core"],
 
-    "@relic/analyzer-go": ["@relic/analyzer-go@workspace:packages/analyzer/go"],
+    "@dependency-graph/analyzer-go": ["@dependency-graph/analyzer-go@workspace:packages/analyzer/go"],
 
-    "@relic/analyzer-java": ["@relic/analyzer-java@workspace:packages/analyzer/java"],
+    "@dependency-graph/analyzer-java": ["@dependency-graph/analyzer-java@workspace:packages/analyzer/java"],
 
-    "@relic/analyzer-python": ["@relic/analyzer-python@workspace:packages/analyzer/python"],
+    "@dependency-graph/analyzer-python": ["@dependency-graph/analyzer-python@workspace:packages/analyzer/python"],
 
-    "@relic/analyzer-rust": ["@relic/analyzer-rust@workspace:packages/analyzer/rust"],
+    "@dependency-graph/analyzer-rust": ["@dependency-graph/analyzer-rust@workspace:packages/analyzer/rust"],
 
-    "@relic/analyzer-typescript": ["@relic/analyzer-typescript@workspace:packages/analyzer/typescript"],
+    "@dependency-graph/analyzer-typescript": ["@dependency-graph/analyzer-typescript@workspace:packages/analyzer/typescript"],
 
-    "@relic/dashboard": ["@relic/dashboard@workspace:apps/dashboard"],
+    "@dependency-graph/dashboard": ["@dependency-graph/dashboard@workspace:apps/dashboard"],
 
-    "@relic/database": ["@relic/database@workspace:packages/database"],
+    "@dependency-graph/database": ["@dependency-graph/database@workspace:packages/database"],
 
-    "@relic/docs": ["@relic/docs@workspace:docs"],
+    "@dependency-graph/docs": ["@dependency-graph/docs@workspace:docs"],
 
-    "@relic/graph-core": ["@relic/graph-core@workspace:packages/core"],
+    "@dependency-graph/graph-core": ["@dependency-graph/graph-core@workspace:packages/core"],
 
-    "@relic/indexer": ["@relic/indexer@workspace:packages/indexer"],
+    "@dependency-graph/indexer": ["@dependency-graph/indexer@workspace:packages/indexer"],
 
-    "@relic/mcp-server": ["@relic/mcp-server@workspace:apps/mcp"],
+    "@dependency-graph/mcp-server": ["@dependency-graph/mcp-server@workspace:apps/mcp"],
 
     "@rolldown/binding-android-arm-eabi": ["@rolldown/binding-android-arm-eabi@1.2.13", "", { "os": "android", "cpu": "arm" }, "sha512-Vu/NICrgdRvUOeaJZIyB2FP63s6fO/4ud5l8dXmxDx9yDyn+mN0y+gsvsVviSli+T361Aqo0h46EuMoobrwawA=="],
 
@@ -1133,7 +1133,7 @@
 
     "regex-utilities": ["regex-utilities@2.3.0", "", {}, "sha512-8VhliFJAWRaUiVvREIiW2NXXTmHs4vMNnSzuJVhscgmGav3g9VDxLrQndI3dZZVVdp0ZO/5v0xmX516/7M9cng=="],
 
-    "relic-graph": ["relic-graph@workspace:apps/api"],
+    "dependency-graph": ["dependency-graph@workspace:apps/api"],
 
     "require-from-string": ["require-from-string@2.0.2", "", {}, "sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw=="],
 

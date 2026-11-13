@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Relic">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Dependency Graph">
   <style>
     .ink { fill: #18181b; stroke: #18181b; }
     @media (prefers-color-scheme: dark) { .ink { fill: #fafafa; stroke: #fafafa; } }

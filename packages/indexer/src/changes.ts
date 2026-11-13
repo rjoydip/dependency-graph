@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process";
-import { GraphError } from "@relic/graph-core";
-import type { GraphNode } from "@relic/graph-core";
+import { GraphError } from "@dependency-graph/graph-core";
+import type { GraphNode } from "@dependency-graph/graph-core";
 
 export interface ChangedRange {
   filePath: string;

@@ -5,9 +5,9 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
-import type { GraphNode, ImpactResult } from "@relic/graph-core";
-import { ingestRuntime, readRuntimeFile } from "@relic/indexer";
-import { buildApp, type RelicApp } from "./app";
+import type { GraphNode, ImpactResult } from "@dependency-graph/graph-core";
+import { ingestRuntime, readRuntimeFile } from "@dependency-graph/indexer";
+import { buildApp, type DependencyGraphApp } from "./app";
 import { evaluateBoundaries, loadBoundaryConfig } from "./check";
 import { diffSnapshots, type SnapshotLike } from "./diff";
 import { exportGraph, type ExportFormat } from "./export";
@@ -16,18 +16,18 @@ import { collectPrImpact, formatPrImpact } from "./pr";
 import { startWatcher } from "./watch";
 
 /**
- * relic — one command for the dashboard: indexes the given path (default:
+ * dependency-graph — one command for the dashboard: indexes the given path (default:
  * cwd) into the shared graph DB, serves the API + built UI, opens a browser.
  *
- *   relic [path] [--port 8787] [--db <graph.db>] [--no-open] [--watch]
- *   relic index [path] [--db <graph.db>]
- *   relic impact <symbol> [--path <repo>] [--depth 5] [--json] [--indirect]
- *   relic export [--path <repo>] [--format mermaid|dot]
- *   relic check [--path <repo>] [--config <file>] [--json]
- *   relic pr [--path <repo>] [--base <rev>] [--head <rev>] [--json]
- *   relic init [path] [--force]
- *   relic diff a.json b.json [--check]
- *   relic runtime <coverage.lcov|otel.json> [--path <repo>] [--runtime-format lcov|otel]
+ *   dependency-graph [path] [--port 8787] [--db <graph.db>] [--no-open] [--watch]
+ *   dependency-graph index [path] [--db <graph.db>]
+ *   dependency-graph impact <symbol> [--path <repo>] [--depth 5] [--json] [--indirect]
+ *   dependency-graph export [--path <repo>] [--format mermaid|dot]
+ *   dependency-graph check [--path <repo>] [--config <file>] [--json]
+ *   dependency-graph pr [--path <repo>] [--base <rev>] [--head <rev>] [--json]
+ *   dependency-graph init [path] [--force]
+ *   dependency-graph diff a.json b.json [--check]
+ *   dependency-graph runtime <coverage.lcov|otel.json> [--path <repo>] [--runtime-format lcov|otel]
  */
 type Mode = "serve" | "index" | "diff" | "impact" | "export" | "check" | "init" | "pr" | "runtime";
 
@@ -61,7 +61,7 @@ function parseArgs(argv: string[]): CliOptions {
     mode: "serve",
     root: process.cwd(),
     port: Number(process.env.PORT ?? 8787),
-    dbPath: process.env.RELIC_DB ?? join(tmpdir(), "relic.db"),
+    dbPath: process.env.DEPENDENCY_GRAPH_DB ?? join(tmpdir(), "dependency-graph.db"),
     open: true,
     watch: false,
     check: false,
@@ -161,7 +161,7 @@ function formatImpact(impact: ImpactResult): string {
   return `${lines.join("\n")}\n`;
 }
 
-function resolveSymbol(app: RelicApp, repositoryId: string, symbol: string) {
+function resolveSymbol(app: DependencyGraphApp, repositoryId: string, symbol: string) {
   const matches = app.graph.graph.searchSymbols(repositoryId, symbol);
   const exact = matches.filter((m) => m.name === symbol || m.qualifiedName === symbol);
   const pick = exact.length > 0 ? exact : matches.length === 1 ? matches : [];
@@ -189,7 +189,7 @@ const { mode, root, port, dbPath, open } = opts;
 if (mode === "diff") {
   const [beforePath, afterPath] = opts.diffFiles;
   if (!beforePath || !afterPath) {
-    console.error("usage: relic diff <before.json> <after.json> [--check]");
+    console.error("usage: dependency-graph diff <before.json> <after.json> [--check]");
     process.exitCode = 1;
   } else {
     try {
@@ -214,7 +214,7 @@ if (mode === "diff") {
 } else if (mode === "impact") {
   const app = buildApp({ dbPath });
   try {
-    if (!opts.symbol) throw new Error("usage: relic impact <symbol> [--path <repo>]");
+    if (!opts.symbol) throw new Error("usage: dependency-graph impact <symbol> [--path <repo>]");
     const indexed = app.graph.indexer.index(root);
     const target = resolveSymbol(app, indexed.repositoryId, opts.symbol);
     const impact = app.graph.graph.analyzeImpact(indexed.repositoryId, target.id, {
@@ -248,7 +248,9 @@ if (mode === "diff") {
     const indexed = app.graph.indexer.index(root);
     const config = loadBoundaryConfig(root, opts.config ?? undefined);
     if (!config) {
-      throw new Error("No boundary config found. Create .relicrc.json or pass --config <file>.");
+      throw new Error(
+        "No boundary config found. Create .dependency-graphrc.json or pass --config <file>.",
+      );
     }
     const edges = app.graph.repository.getEdges({
       repositoryId: indexed.repositoryId,
@@ -281,7 +283,7 @@ if (mode === "diff") {
       );
     } else {
       console.log(
-        `relic check: ${violations.length} violation(s) across ${config.rules.length} rule(s) [${config.source}]`,
+        `dependency-graph check: ${violations.length} violation(s) across ${config.rules.length} rule(s) [${config.source}]`,
       );
       for (const violation of violations) {
         const evidence = violation.edge.evidence.file
@@ -331,7 +333,7 @@ if (mode === "diff") {
   const app = buildApp({ dbPath });
   try {
     if (!opts.runtimeFile)
-      throw new Error("usage: relic runtime <coverage.lcov|otel.json> [--path <repo>]");
+      throw new Error("usage: dependency-graph runtime <coverage.lcov|otel.json> [--path <repo>]");
     const runtime = readRuntimeFile(opts.runtimeFile);
     const indexed = app.graph.indexer.index(root);
     const report = ingestRuntime(
@@ -398,6 +400,6 @@ if (mode === "diff") {
   }
 
   serve({ fetch: app.fetch, port, hostname: "127.0.0.1" });
-  console.error(`relic running at http://127.0.0.1:${port}`);
+  console.error(`dependency-graph running at http://127.0.0.1:${port}`);
   if (open) openBrowser(`http://127.0.0.1:${port}`);
 }

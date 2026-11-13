@@ -7,9 +7,20 @@ import { dirname, join, resolve, sep } from "node:path";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { streamSSE } from "hono/streaming";
-import { GraphError } from "@relic/graph-core";
-import type { EdgeType, GraphEdge, GraphNode, NodeType, RepositoryMeta } from "@relic/graph-core";
-import { ingestRuntime, openGraph, repositoryIdFor, type OpenGraph } from "@relic/indexer";
+import { GraphError } from "@dependency-graph/graph-core";
+import type {
+  EdgeType,
+  GraphEdge,
+  GraphNode,
+  NodeType,
+  RepositoryMeta,
+} from "@dependency-graph/graph-core";
+import {
+  ingestRuntime,
+  openGraph,
+  repositoryIdFor,
+  type OpenGraph,
+} from "@dependency-graph/indexer";
 
 export interface ApiOptions {
   dbPath: string;
@@ -25,7 +36,7 @@ export interface GraphUpdateEvent {
   indexedAt: string | null;
 }
 
-export type RelicApp = Hono & { graph: OpenGraph; events: EventEmitter };
+export type DependencyGraphApp = Hono & { graph: OpenGraph; events: EventEmitter };
 
 const MAX_LIMIT = 5000;
 
@@ -79,7 +90,7 @@ export function parseGitHubUrl(raw: string): string | null {
 function ensureGitHubClone(url: string): string {
   const dir = join(
     tmpdir(),
-    "relic-github",
+    "dependency-graph-github",
     createHash("sha1").update(url).digest("hex").slice(0, 12),
   );
   if (!existsSync(dir)) {
@@ -98,9 +109,9 @@ function ensureGitHubClone(url: string): string {
   return dir;
 }
 
-export function buildApp(options: ApiOptions): RelicApp {
+export function buildApp(options: ApiOptions): DependencyGraphApp {
   const store = openGraph(options.dbPath);
-  const app = new Hono() as RelicApp;
+  const app = new Hono() as DependencyGraphApp;
   app.graph = store;
   app.events = new EventEmitter();
   app.events.setMaxListeners(0); // one listener per open SSE stream
@@ -294,7 +305,7 @@ export function buildApp(options: ApiOptions): RelicApp {
       const snap = store.repository.snapshot(id);
       if (!snap) throw new GraphError("REPOSITORY_NOT_FOUND", `Repository not indexed: ${id}`);
       return c.json({
-        format: "relic-snapshot",
+        format: "dependency-graph-snapshot",
         version: 1,
         repository: {
           name: snap.meta.name,
@@ -332,7 +343,7 @@ export function buildApp(options: ApiOptions): RelicApp {
   app.post("/api/snapshot", async (c) => {
     try {
       const body = await c.req.json<SnapshotBody>();
-      if (body.format !== "relic-snapshot" || body.version !== 1)
+      if (body.format !== "dependency-graph-snapshot" || body.version !== 1)
         throw new GraphError("INVALID_INPUT", "Unsupported snapshot format");
       const nodes = body.nodes ?? [];
       const edges = body.edges ?? [];

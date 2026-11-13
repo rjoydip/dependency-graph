@@ -1,4 +1,4 @@
-name: relic-pr
+name: dependency-graph-pr
 
 on:
   pull_request:
@@ -19,8 +19,8 @@ jobs:
         with:
           bun-version: latest
       - run: bun install
-      - uses: ./.github/actions/relic-pr
+      - uses: ./.github/actions/dependency-graph-pr
         with:
           base: origin/${{ github.base_ref }}
           head: HEAD
-          relic-command: bun run apps/api/src/cli.ts
+          dependency-graph-command: bun run apps/api/src/cli.ts

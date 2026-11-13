@@ -1,4 +1,4 @@
-/** Minimal snapshot shape shared by the export endpoint and `relic diff`. */
+/** Minimal snapshot shape shared by the export endpoint and `dependency-graph diff`. */
 export interface SnapshotNodeLike {
   id: string;
   type?: string;

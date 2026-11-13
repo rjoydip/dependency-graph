@@ -10,7 +10,7 @@ import {
   readRuntimeFile,
   repositoryIdFor,
   type OpenGraph,
-} from "@relic/indexer";
+} from "@dependency-graph/indexer";
 import { cleanup, copyFixture, tempDir } from "../../helpers";
 
 describe("runtime evidence parsers", () => {
